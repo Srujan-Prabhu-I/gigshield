@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
-import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert } from "lucide-react"
+import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert, Calculator } from "lucide-react"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
 const CITIES = ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Secunderabad"]
@@ -70,7 +70,6 @@ export default function CheckerPage() {
       
       setResult(data.result)
       
-      // Auto-fetch rights
       fetchRights(data.result)
 
     } catch (error: any) {
@@ -145,48 +144,54 @@ export default function CheckerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-xl mx-auto space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Check Your Pay</h1>
-          <p className="text-slate-500">Find out if you are being paid the legal minimum wage in Telangana (2025).</p>
+    <div className="min-h-screen bg-[#0e0e0e] py-8 px-4 sm:px-6 lg:px-8 selection:bg-[#ff7162]/30 text-white font-sans pb-32">
+      <div className="max-w-xl mx-auto space-y-10">
+        
+        {/* HEADER */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 mb-2">
+            <Calculator className="w-4 h-4 text-[#3fe56c]" />
+            <span className="text-[10px] font-bold text-neutral-300 tracking-widest uppercase">Fair Pay Checker</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">Check Your Pay</h1>
+          <p className="text-neutral-400 font-medium max-w-sm mx-auto">Verify your earnings against the Telangana legal minimum wage (2025).</p>
         </div>
 
         {/* INPUT FORM */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Job Details</CardTitle>
-            <CardDescription>Enter your typical limits below. We do not store your name.</CardDescription>
+        <Card className="bg-[#1c1b1b] border border-neutral-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] rounded-[24px] overflow-hidden">
+          <CardHeader className="border-b border-neutral-800/50 bg-[#131313]/50 pb-6 pt-8">
+            <CardTitle className="text-2xl text-white font-bold">Job Details</CardTitle>
+            <CardDescription className="text-neutral-400 font-medium">Enter your typical limits below. We do not store your name.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Platform</label>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <label className="text-sm font-bold tracking-wide text-neutral-300 uppercase">Platform</label>
                   <Select value={platform} onValueChange={(val) => setPlatform(val || "")}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-[#131313] border-neutral-800 text-white h-12 rounded-xl focus:ring-[#3fe56c] focus:ring-offset-0 focus:ring-offset-[#1c1b1b]">
                       <SelectValue placeholder="Select platform" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                       <SelectGroup>
                         {PLATFORMS.map(p => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                          <SelectItem key={p} value={p} className="focus:bg-[#131313] focus:text-white cursor-pointer">{p}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">City</label>
+                <div className="space-y-2.5">
+                  <label className="text-sm font-bold tracking-wide text-neutral-300 uppercase">City</label>
                   <Select value={city} onValueChange={(val) => setCity(val || "")}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-[#131313] border-neutral-800 text-white h-12 rounded-xl focus:ring-[#3fe56c] focus:ring-offset-0 focus:ring-offset-[#1c1b1b]">
                       <SelectValue placeholder="Select city" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                       <SelectGroup>
                         {CITIES.map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                          <SelectItem key={c} value={c} className="focus:bg-[#131313] focus:text-white cursor-pointer">{c}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
@@ -194,8 +199,8 @@ export default function CheckerPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none">Orders/trips per day</label>
+              <div className="space-y-2.5">
+                <label className="text-sm font-bold tracking-wide text-neutral-300 uppercase">Orders/trips per day</label>
                 <input
                   required
                   type="number"
@@ -203,13 +208,13 @@ export default function CheckerPage() {
                   max="50"
                   value={ordersPerDay}
                   onChange={e => setOrdersPerDay(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950"
+                  className="flex h-14 w-full rounded-xl border border-neutral-800 bg-[#131313] px-4 py-2 text-base text-white focus:outline-none focus:border-[#3fe56c] focus:ring-1 focus:ring-[#3fe56c] transition-all"
                   placeholder="e.g. 15"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none">Hours worked per day</label>
+              <div className="space-y-2.5">
+                <label className="text-sm font-bold tracking-wide text-neutral-300 uppercase">Hours worked per day</label>
                 <input
                   required
                   type="number"
@@ -217,37 +222,41 @@ export default function CheckerPage() {
                   max="20"
                   value={hoursPerDay}
                   onChange={e => setHoursPerDay(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950"
+                  className="flex h-14 w-full rounded-xl border border-neutral-800 bg-[#131313] px-4 py-2 text-base text-white focus:outline-none focus:border-[#3fe56c] focus:ring-1 focus:ring-[#3fe56c] transition-all"
                   placeholder="e.g. 10"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none">Monthly earnings (₹)</label>
+              <div className="space-y-2.5">
+                <label className="text-sm font-bold tracking-wide text-neutral-300 uppercase">Monthly earnings (₹)</label>
                 <input
                   required
                   type="number"
                   min="1"
                   value={monthlyPay}
                   onChange={e => setMonthlyPay(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950"
+                  className="flex h-14 w-full rounded-xl border border-neutral-800 bg-[#131313] px-4 py-2 text-base text-white focus:outline-none focus:border-[#3fe56c] focus:ring-1 focus:ring-[#3fe56c] transition-all"
                   placeholder="e.g. 15000"
                 />
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="space-y-3 pt-4 border-t border-neutral-800/50">
                 <div className="flex items-center gap-2 mb-2">
-                  <Languages className="w-4 h-4 text-slate-500" />
-                  <label className="text-sm font-medium leading-none">Language Preference</label>
+                  <Languages className="w-4 h-4 text-neutral-500" />
+                  <label className="text-sm font-bold tracking-wide text-neutral-400 uppercase">Language Preference</label>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   {["en" as const, "hi" as const, "te" as const].map((lang) => (
                     <Button
                       key={lang}
                       type="button"
-                      variant={language === lang ? "default" : "outline"}
+                      variant="outline"
                       onClick={() => setLanguage(lang)}
-                      className="flex-1 uppercase"
+                      className={`flex-1 h-12 rounded-xl transition-all font-extrabold tracking-widest uppercase ${
+                        language === lang 
+                        ? "bg-[#3ce36a]/10 border-[#3ce36a]/50 text-[#3ce36a]" 
+                        : "bg-[#131313] border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:bg-[#201f1f]"
+                      }`}
                     >
                       {lang}
                     </Button>
@@ -255,110 +264,128 @@ export default function CheckerPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full mt-6" disabled={isLoading} size="lg">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Check My Pay
+              <Button type="submit" className="w-full h-16 mt-8 rounded-xl bg-gradient-to-br from-[#3fe56c] to-[#00c853] hover:brightness-110 text-[#002108] font-extrabold text-lg transition-all active:scale-[0.98] shadow-[0_0_30px_rgba(0,200,83,0.3)]" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : null}
+                {isLoading ? 'Calculating...' : 'Run Analysis'}
               </Button>
             </form>
           </CardContent>
+          <CardFooter className="py-5 justify-center bg-[#131313]/30 border-t border-neutral-800/50">
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 opacity-80">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Your data is anonymous. We do not store personal details.
+            </p>
+          </CardFooter>
         </Card>
 
-        {/* RESULT CARD */}
+        {/* HIGH-IMPACT RESULT SECTION */}
         {result && (
-          <div className="animate-in fade-in duration-500 space-y-6">
-            <Card className={`border-2 ${result.isUnderpaid ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      {result.isUnderpaid ? (
-                        <AlertCircle className="w-6 h-6 text-red-600" />
-                      ) : (
-                        <CheckCircle2 className="w-6 h-6 text-green-600" />
-                      )}
-                      {platform} in {city}
-                    </CardTitle>
-                    <CardDescription className="mt-1">
-                      Based on {hoursPerDay} hours/day
-                    </CardDescription>
-                  </div>
-                  <Badge variant={result.isUnderpaid ? "destructive" : "default"} className={!result.isUnderpaid ? "bg-green-600 hover:bg-green-700 hover:text-white" : ""}>
-                    {result.isUnderpaid ? "Underpaid" : "Fair Pay"}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-center space-y-2 bg-white/50 rounded-lg p-6">
-                  {result.isUnderpaid ? (
-                    <>
-                      <h3 className="text-4xl font-black text-red-600 tracking-tight">₹{result.monthlyDeficit.toLocaleString('en-IN')}<span className="text-lg font-bold text-red-500/70">/mo</span></h3>
-                      <p className="text-red-700 font-medium">You are being underpaid.</p>
-                      <p className="text-sm text-red-600/80">That's ₹{result.annualDeficit.toLocaleString('en-IN')} per year deficit.</p>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-4xl font-black text-green-600 tracking-tight">Fair Pay</h3>
-                      <p className="text-green-700 font-medium">You are earning above the legal minimum.</p>
-                    </>
-                  )}
-                </div>
+          <div className="animate-in fade-in slide-in-from-bottom-5 duration-700 space-y-8 pb-10">
+            
+            {/* GIANT STATS CARD */}
+            <div className={`relative overflow-hidden rounded-[32px] p-8 md:p-12 border ${
+              result.isUnderpaid 
+                ? "bg-gradient-to-br from-[#2a1313] to-[#1c1b1b] border-[#ff4c4c]/30 shadow-[0_0_50px_rgba(255,76,76,0.15)]" 
+                : "bg-gradient-to-br from-[#0c2a15] to-[#1c1b1b] border-[#3ce36a]/30 shadow-[0_0_50px_rgba(60,227,106,0.15)]"
+            }`}>
+              
+              <div className="absolute top-0 left-0 w-full h-1 opacity-50 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: result.isUnderpaid ? '#ff7162' : '#3ce36a' }}></div>
 
-                <div className="grid grid-cols-2 gap-4 text-center divide-x divide-slate-200">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Pay</p>
-                    <p className="text-2xl font-bold text-slate-900">₹{result.actualPayPerHour}/hr</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Legal Min</p>
-                    <p className="text-2xl font-bold text-slate-900">₹{result.fairMinimumPerHour}/hr</p>
-                  </div>
-                </div>
+              <div className="text-center relative z-10 space-y-3">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-widest uppercase mb-4 ${
+                  result.isUnderpaid ? "bg-[#ff4c4c]/10 text-[#ff7162] border border-[#ff4c4c]/20" : "bg-[#3ce36a]/10 text-[#3ce36a] border border-[#3ce36a]/20"
+                }`}>
+                  {result.isUnderpaid ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {result.isUnderpaid ? "Exploitation Detected" : "Fair Wage Compliant"}
+                </span>
+                
+                {result.isUnderpaid ? (
+                  <>
+                    <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-[#ff7162] tracking-tighter leading-tight drop-shadow-lg">
+                      ₹{result.monthlyDeficit.toLocaleString('en-IN')}
+                      <span className="block text-2xl md:text-3xl font-extrabold text-[#ff4c4c]/80 mt-2 uppercase tracking-tight">Underpaid / Month</span>
+                    </h2>
+                    <div className="pt-6">
+                      <p className="text-[#ffb3ae] font-medium text-lg leading-relaxed max-w-sm mx-auto">
+                        You are earning below the Telangana legal minimum wage.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-5xl md:text-6xl font-black text-[#3ce36a] tracking-tighter leading-tight drop-shadow-lg">
+                      Fair Pay
+                      <span className="block text-2xl md:text-3xl font-extrabold text-[#3ce36a]/80 mt-2 uppercase tracking-tight">Target Met</span>
+                    </h2>
+                    <div className="pt-6">
+                      <p className="text-[#bbcbb8] font-medium text-lg leading-relaxed max-w-sm mx-auto">
+                        You are earning above the Telangana legal minimum wage.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
 
-                <div className="pt-4 flex gap-3">
-                  <Button onClick={handleShare} variant="outline" className="flex-1 bg-white">
-                    <Share2 className="mr-2 h-4 w-4" /> Share Result
-                  </Button>
+              <div className="grid grid-cols-2 gap-4 mt-10 pt-8 border-t border-white/5 relative z-10">
+                <div className="bg-[#0e0e0e]/50 rounded-2xl p-5 text-center border border-white/5 hover:bg-[#0e0e0e]/80 transition-colors">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2">Your Pay</p>
+                  <p className="text-3xl font-black text-white">₹{result.actualPayPerHour}<span className="text-base text-neutral-500">/hr</span></p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="bg-[#0e0e0e]/50 rounded-2xl p-5 text-center border border-white/5 hover:bg-[#0e0e0e]/80 transition-colors">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2">Legal Min</p>
+                  <p className="text-3xl font-black text-white">₹{result.fairMinimumPerHour}<span className="text-base text-neutral-500">/hr</span></p>
+                </div>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5 text-indigo-600" />
+            <Button onClick={handleShare} className="w-full h-14 rounded-2xl bg-[#1c1b1b] hover:bg-[#262626] border border-neutral-800 text-white font-bold transition-all active:scale-95 group">
+              <Share2 className="mr-2 h-5 w-5 text-neutral-400 group-hover:text-white transition-colors" /> Share Analysis
+            </Button>
+
+            {/* LEGAL RIGHTS & PETITION SECTION */}
+            <Card className="bg-[#1c1b1b] border-neutral-800 rounded-[28px] overflow-hidden shadow-2xl">
+              <CardHeader className="bg-[#131313] border-b border-neutral-800/50 p-6 md:p-8">
+                <CardTitle className="text-xl flex items-center gap-3 text-white font-bold">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                    <ShieldAlert className="w-5 h-5 text-indigo-400" />
+                  </div>
                   Know Your Rights
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 md:p-8">
                 {isLoadingRights ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <Skeleton className="h-4 w-4/6" />
+                  <div className="space-y-4">
+                    <Skeleton className="h-4 w-full bg-neutral-800 rounded-md" />
+                    <Skeleton className="h-4 w-5/6 bg-neutral-800 rounded-md" />
+                    <Skeleton className="h-4 w-4/6 bg-neutral-800 rounded-md" />
                   </div>
                 ) : (
-                  <div className="prose prose-sm prose-slate max-w-none">
-                    <p className="whitespace-pre-wrap leading-relaxed text-slate-700 font-medium">
+                  <div className="prose prose-invert prose-p:text-neutral-300 prose-p:font-medium prose-p:leading-relaxed max-w-none">
+                    <p className="whitespace-pre-wrap">
                       {rightsText || "Rights information unavailable."}
                     </p>
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="bg-slate-50 border-t border-slate-100 flex flex-col gap-3 py-4">
-                <p className="text-sm text-center text-slate-500 w-full">
-                  Help the government enforce minimum wage laws. Submit this data anonymously.
+              <CardFooter className="bg-[#131313] border-t border-neutral-800/50 flex flex-col gap-4 p-6 md:p-8">
+                <p className="text-sm text-center text-neutral-400 font-medium">
+                  Help the government enforce minimum wage laws. Submit this data anonymously to the GigShield Collective Index.
                 </p>
                 <Button 
                   onClick={handleSubmitReport} 
                   disabled={isSubmittingReport || reportSubmitted} 
-                  className="w-full"
-                  variant={reportSubmitted ? "secondary" : "default"}
+                  className={`w-full h-14 rounded-2xl font-bold transition-all active:scale-[0.98] ${
+                    reportSubmitted 
+                    ? "bg-[#0e0e0e] border border-neutral-800 text-neutral-500 cursor-not-allowed" 
+                    : "bg-white hover:bg-neutral-200 text-black shadow-lg shadow-white/10"
+                  }`}
                 >
-                  {isSubmittingReport ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {reportSubmitted ? "Report submitted. Thank you." : "Submit Anonymous Report"}
+                  {isSubmittingReport ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                  {reportSubmitted ? "Report Added to Index ✓" : "Submit Anonymous Report"}
                 </Button>
               </CardFooter>
             </Card>
+
           </div>
         )}
       </div>

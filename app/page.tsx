@@ -1,124 +1,150 @@
-import Link from "next/link"
-import { ArrowRight, IndianRupee, Shield, TrendingUp } from "lucide-react"
+"use client"
 
-export default function LandingPage() {
+import Link from "next/link"
+import { ChevronRight, Calculator, ScrollText, BarChart3, ShieldCheck } from "lucide-react"
+
+export default function GigShieldHome() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-red-500/30 font-sans">
-      {/* 1. HERO SECTION */}
-      <section className="px-4 py-20 md:py-32 max-w-5xl mx-auto flex flex-col items-center text-center space-y-10">
-        <div className="inline-flex items-center rounded-full border border-neutral-800 bg-neutral-900/50 px-3 py-1 text-sm font-medium text-neutral-300">
-          Telangana Gig Workers Act 2025 — Now Enforced By You
+    <div className="min-h-screen bg-[#0e0e0e] text-white selection:bg-green-500/30 overflow-x-hidden font-sans pb-10">
+      
+      {/* HERO SECTION */}
+      <section className="px-5 pt-12 pb-10 max-w-4xl mx-auto flex flex-col items-center text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 mb-8 self-center">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <span className="text-[10px] font-bold text-neutral-300 tracking-widest uppercase">Live across India</span>
         </div>
-        
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1]">
+
+        <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-5 text-white">
           15 Million Workers.<br />
-          <span className="text-neutral-500">Zero Protection.</span><br />
-          <span className="text-red-500">Until Now.</span>
+          Zero Protection.<br />
+          <span className="text-[#3fe56c]">Until Now.</span>
         </h1>
-        
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl">
-          GigShield is India&apos;s first platform that makes gig worker exploitation visible, measurable, and legally actionable.
+
+        <p className="text-neutral-400 text-lg md:text-xl font-medium max-w-lg mx-auto mb-10 leading-relaxed">
+          Empowering India's gig economy with data-driven protection. Reclaim underpaid wages and understand your rights against platform exploitation.
         </p>
-        
-        <div className="relative max-w-xl text-left bg-neutral-900 border-l-4 border-red-500 p-6 md:p-8 rounded-r-xl italic space-y-4 shadow-2xl">
-          <p className="text-neutral-300 text-lg md:text-xl font-medium leading-relaxed">
-            &quot;App sab decide karta hai — order, paisa, penalty. Sunwai ka koi system nahi.&quot;
-          </p>
-          <p className="text-neutral-500 text-sm font-semibold">
-            — Swiggy Delivery Partner, Hyderabad
-          </p>
-        </div>
-        
-        <div className="space-y-4 pt-6 flex flex-col items-center">
-          <Link href="/checker">
-            <button className="bg-red-500 hover:bg-red-600 text-white font-bold text-lg px-8 py-4 rounded-xl flex items-center gap-2 transition-transform active:scale-95 shadow-lg shadow-red-500/20 group">
-              Check Your Pay Now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+
+        <div className="flex flex-col sm:flex-row w-full gap-4 max-w-md mx-auto justify-center">
+          <Link href="/checker" className="w-full sm:w-auto">
+            <button className="w-full bg-gradient-to-br from-[#3fe56c] to-[#00c853] hover:brightness-110 text-black font-extrabold text-[15px] sm:text-base py-4 sm:py-5 px-8 rounded-2xl transition-all shadow-[0_0_40px_rgba(0,200,83,0.3)] active:scale-95">
+              Check Your Pay
             </button>
           </Link>
-          <p className="text-xs font-medium text-neutral-600">
-            Free. Anonymous. Takes 30 seconds.
-          </p>
+          <Link href="/dashboard" className="w-full sm:w-auto">
+            <button className="w-full bg-[#1c1b1b] hover:bg-[#201f1f] text-neutral-100 font-bold text-[15px] sm:text-base py-4 sm:py-5 px-8 rounded-2xl transition-all border border-neutral-800 active:scale-95">
+              View Impact Report
+            </button>
+          </Link>
         </div>
       </section>
 
-      {/* 2. STATS BAR */}
-      <section className="bg-neutral-900/80 border-y border-neutral-800/50">
-        <div className="max-w-5xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-neutral-800">
-          <div className="pt-8 md:pt-0 space-y-2">
-            <h3 className="text-4xl md:text-5xl font-black text-white">15M+</h3>
-            <p className="text-sm text-neutral-400 font-medium uppercase tracking-wider">Gig Workers in India</p>
+      {/* STATS SECTION */}
+      <section className="px-5 py-6 max-w-4xl mx-auto space-y-4">
+        <div className="bg-[#1c1b1b] rounded-[24px] p-6 md:p-8 flex flex-col justify-between relative overflow-hidden group border border-neutral-800/50 hover:bg-[#201f1f] transition-colors">
+          <div className="absolute -right-8 -bottom-10 text-[#0e0e0e] opacity-80 group-hover:scale-110 transition-transform duration-500">
+            <svg width="180" height="180" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h3v7H4zM10.5 10h3v7h-3zM2 19h20v3H2zM17 10h3v7h-3zM12 1L2 6v2h20V6L12 1z"/></svg>
           </div>
-          <div className="pt-8 md:pt-0 space-y-2">
-            <h3 className="text-4xl md:text-5xl font-black text-red-500">₹2,08,224</h3>
-            <p className="text-sm text-neutral-400 font-medium uppercase tracking-wider">Stolen per worker per year</p>
+          <div className="relative z-10">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[#ff7162] uppercase mb-2">Exploitation Alert</p>
+            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-2">₹12Cr+</h2>
+            <p className="text-neutral-400 font-medium max-w-[200px] text-sm/relaxed">Underpaid Wages Detected Across India</p>
           </div>
-          <div className="pt-8 md:pt-0 space-y-2">
-            <h3 className="text-4xl md:text-5xl font-black text-white">0</h3>
-            <p className="text-sm text-neutral-400 font-medium uppercase tracking-wider">Tools existed before GigShield</p>
+        </div>
+
+        <div className="bg-[#1c1b1b] rounded-[24px] p-6 md:p-8 border border-neutral-800/50 hover:bg-[#201f1f] transition-colors cursor-default">
+          <h2 className="text-4xl md:text-5xl font-black text-[#3ce36a] tracking-tighter mb-2">20k+</h2>
+          <p className="text-[10px] font-bold tracking-[0.1em] text-neutral-500 uppercase mb-4">Worker Reports Daily</p>
+          <div className="flex -space-x-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-8 h-8 rounded-full border-2 border-[#1c1b1b] bg-neutral-800 flex items-center justify-center overflow-hidden">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 50}&backgroundColor=262626`} alt="Worker Avatar" className="w-full h-full object-cover" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURE CARDS */}
-      <section className="px-4 py-20 md:py-32 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* FEATURES (THE SENTINEL SUITE) */}
+      <section className="px-5 pt-16 pb-12 max-w-4xl mx-auto">
+        <div className="mb-8 md:mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">The Sentinel Suite</h2>
+          <p className="text-neutral-400 font-medium text-base md:text-lg max-w-md">Precision tools designed to shift the power dynamic back to the workers.</p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
           
-          {/* Card 1 */}
-          <div className="bg-neutral-900 border border-neutral-800 hover:border-neutral-700/80 rounded-2xl p-8 flex flex-col h-full transition-colors group">
-            <div className="w-12 h-12 bg-neutral-950 rounded-xl flex items-center justify-center mb-6 text-red-500 border border-neutral-800 group-hover:border-red-500/30 group-hover:bg-red-500/10 transition-colors">
-              <IndianRupee className="w-6 h-6" />
+          <Link href="/checker" className="block group">
+            <div className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col items-start active:scale-[0.98]">
+              <div className="w-12 h-12 rounded-2xl bg-[#004c1b]/30 flex items-center justify-center mb-6 border border-[#00c853]/20">
+                <Calculator className="w-6 h-6 text-[#3fe56c]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Fair Pay Checker</h3>
+              <p className="text-neutral-400 text-sm/relaxed font-medium mb-8">Compare your earnings against industry standards and legal minimums to detect hidden algorithmic cuts.</p>
+              <div className="mt-auto flex items-center text-[11px] font-bold tracking-widest text-[#3fe56c] uppercase">
+                Analyze Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Check Your Pay</h3>
-            <p className="text-neutral-400 leading-relaxed mb-8 flex-grow">
-              See exactly how much you&apos;re underpaid vs Telangana minimum wage law.
-            </p>
-            <Link href="/checker" className="mt-auto group/link flex items-center text-sm font-bold text-red-500">
-              Calculate Now
-              <ArrowRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          </Link>
 
-          {/* Card 2 */}
-          <div className="bg-neutral-900 border border-neutral-800 hover:border-neutral-700/80 rounded-2xl p-8 flex flex-col h-full transition-colors group">
-            <div className="w-12 h-12 bg-neutral-950 rounded-xl flex items-center justify-center mb-6 text-red-500 border border-neutral-800 group-hover:border-red-500/30 group-hover:bg-red-500/10 transition-colors">
-              <TrendingUp className="w-6 h-6" />
+          <Link href="/grievance" className="block group">
+            <div className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col items-start active:scale-[0.98]">
+              <div className="w-12 h-12 rounded-2xl bg-[#68000b]/30 flex items-center justify-center mb-6 border border-[#ff7162]/20">
+                <ScrollText className="w-6 h-6 text-[#ff7162]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Legal Rights Guide</h3>
+              <p className="text-neutral-400 text-sm/relaxed font-medium mb-8">Auto-generate complaint letters based on simplified legal frameworks curated for Indian gig workers.</p>
+              <div className="mt-auto flex items-center text-[11px] font-bold tracking-widest text-[#ff7162] uppercase">
+                Learn Rights <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Exploitation Index</h3>
-            <p className="text-neutral-400 leading-relaxed mb-8 flex-grow">
-              Live crowd-sourced ranking of which platforms exploit workers most.
-            </p>
-            <Link href="/index" className="mt-auto group/link flex items-center text-sm font-bold text-red-500">
-              View Index
-              <ArrowRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          </Link>
 
-          {/* Card 3 */}
-          <div className="bg-neutral-900 border border-neutral-800 hover:border-neutral-700/80 rounded-2xl p-8 flex flex-col h-full transition-colors group">
-            <div className="w-12 h-12 bg-neutral-950 rounded-xl flex items-center justify-center mb-6 text-red-500 border border-neutral-800 group-hover:border-red-500/30 group-hover:bg-red-500/10 transition-colors">
-              <Shield className="w-6 h-6" />
+          <Link href="/index" className="block group md:col-span-2">
+            <div className="bg-[#131313] md:bg-[#1c1b1b] hover:bg-[#1c1b1b] md:hover:bg-[#201f1f] border border-neutral-800/50 md:border-transparent md:hover:border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col md:flex-row md:items-center justify-between active:scale-[0.98]">
+              <div className="mb-6 md:mb-0 max-w-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[#00344b]/30 flex items-center justify-center mb-6 md:hidden border border-[#2fb9f9]/20">
+                  <BarChart3 className="w-6 h-6 text-[#2fb9f9]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-3">
+                  <BarChart3 className="w-5 h-5 text-[#2fb9f9] hidden md:block" />
+                  Exploitation Index
+                </h3>
+                <p className="text-neutral-400 text-sm/relaxed font-medium md:mb-0 mb-6">Real-time ranking of platforms based on worker treatment, pay transparency, and safety.</p>
+              </div>
+              <div className="flex items-center text-[11px] font-bold tracking-widest text-[#2fb9f9] uppercase bg-[#001e2d] px-5 py-3 rounded-full shrink-0">
+                View Rankings <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Know Your Rights</h3>
-            <p className="text-neutral-400 leading-relaxed mb-8 flex-grow">
-              AI-generated rights in English, Hindi, Telugu. Shareable. Printable.
-            </p>
-            <Link href="/checker" className="mt-auto group/link flex items-center text-sm font-bold text-red-500">
-              Get Rights
-              <ArrowRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          </Link>
 
         </div>
       </section>
 
-      {/* 4. FOOTER */}
-      <footer className="border-t border-neutral-800 py-12 px-4 text-center space-y-4">
-        <h4 className="text-xl font-black text-white tracking-tight">GigShield <span className="text-neutral-500 font-medium">— Built for 15 million voices.</span></h4>
-        <p className="text-sm font-medium text-neutral-600">
-          Anonymous. No login. Always free for workers.
-        </p>
-      </footer>
+      {/* FINAL CTA */}
+      <section className="px-5 py-16 max-w-4xl mx-auto">
+        <div className="bg-[#131313] border border-neutral-800/50 rounded-[32px] p-8 md:p-12 text-center relative overflow-hidden">
+          {/* Subtle glow background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[50%] bg-[#00c853] opacity-5 blur-[100px] pointer-events-none rounded-full"></div>
+          
+          <ShieldCheck className="w-12 h-12 text-[#3ce36a] mx-auto mb-6 opacity-80" />
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
+            Stop Working<br />
+            for Free.
+          </h2>
+          <p className="text-neutral-400 font-medium text-sm md:text-base max-w-[280px] md:max-w-md mx-auto mb-10 leading-relaxed">
+            Join the movement for transparent gig work. GigShield is 100% free for workers, forever.
+          </p>
+          <Link href="/checker" className="inline-block w-full sm:w-auto">
+            <button className="w-full sm:w-auto bg-[#3fe56c] hover:bg-[#3ce36a] text-[#002108] font-extrabold text-[15px] sm:text-base py-5 px-10 rounded-full transition-transform active:scale-95 shadow-[0_10px_40px_rgba(63,229,108,0.2)]">
+              PROTECT MY PAY
+            </button>
+          </Link>
+        </div>
+      </section>
+
     </div>
   )
 }

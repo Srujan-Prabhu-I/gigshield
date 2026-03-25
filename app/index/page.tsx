@@ -82,12 +82,12 @@ export default function ExploitationIndex() {
         
         {/* TOP SECTION */}
         <header className="space-y-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-6 hover:bg-red-500/20 hover:scale-105 transition-all cursor-default shadow-[0_0_15px_rgba(239,68,68,0.2)]">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <span className="text-red-500 text-xs font-bold tracking-widest uppercase">Live Updates</span>
+            <span className="text-red-500 text-[10px] font-bold tracking-widest uppercase">Live Updates</span>
           </div>
           
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white mb-4">
@@ -134,10 +134,10 @@ export default function ExploitationIndex() {
                     <Card 
                       key={item.platform} 
                       className={`
-                        transition-all duration-300
+                        transition-all duration-300 transform
                         ${isRank1 
-                          ? "bg-neutral-900 border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.1)] scale-[1.02] md:scale-105 z-10 relative my-6" 
-                          : "bg-neutral-900/50 border-neutral-800 shadow-none hover:bg-neutral-900"}
+                          ? "bg-neutral-900 border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.2)] scale-[1.03] z-10 relative my-6" 
+                          : "bg-neutral-900/50 border-neutral-800 shadow-none hover:bg-neutral-900 hover:-translate-y-1 hover:shadow-2xl"}
                       `}
                     >
                       <CardContent className={`p-5 md:p-6 ${isRank1 ? 'py-8' : ''}`}>
@@ -167,8 +167,8 @@ export default function ExploitationIndex() {
                               </div>
                               <Progress 
                                 value={item.exploitationScore} 
-                                className="h-2.5 bg-neutral-800"
-                                indicatorClassName={getScoreColor(item.exploitationScore)}
+                                className="h-3 bg-neutral-800 rounded-full"
+                                indicatorClassName={`${getScoreColor(item.exploitationScore)} transition-all duration-[1500ms] ease-out`}
                               />
                             </div>
 

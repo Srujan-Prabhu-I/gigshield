@@ -5,20 +5,27 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from("submissions")
-      .select("platform, deficit")
+      .select("platform, deficit, city")
       .order("created_at", { ascending: false })
       .limit(500)
 
     if (error) throw error
 
     const platformStats: Record<string, { totalDeficit: number; count: number }> = {}
+    const cityStats: Record<string, number> = {}
 
     data.forEach((row: any) => {
+      // Platform aggregation
       if (!platformStats[row.platform]) {
         platformStats[row.platform] = { totalDeficit: 0, count: 0 }
       }
       platformStats[row.platform].totalDeficit += row.deficit
       platformStats[row.platform].count += 1
+
+      // City aggregation
+      if (row.city) {
+        cityStats[row.city] = (cityStats[row.city] || 0) + 1
+      }
     })
 
     const index = Object.entries(platformStats)
@@ -30,7 +37,11 @@ export async function GET() {
       }))
       .sort((a, b) => b.exploitationScore - a.exploitationScore)
 
-    return NextResponse.json({ success: true, index })
+    const cities = Object.entries(cityStats)
+      .map(([city, count]) => ({ city, count }))
+      .sort((a, b) => b.count - a.count)
+
+    return NextResponse.json({ success: true, index, cities })
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch index" }, { status: 500 })
   }
