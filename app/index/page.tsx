@@ -34,7 +34,7 @@ export default function ExploitationIndex() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/index")
+      const res = await fetch("/api/exploitation")
       const json = await res.json()
       if (json.success && json.index) {
         setData(json.index)

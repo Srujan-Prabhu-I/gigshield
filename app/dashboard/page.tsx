@@ -25,7 +25,7 @@ export default function AnalyticsDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/index")
+        const res = await fetch("/api/exploitation")
         const json = await res.json()
         if (json.index) setPlatforms(json.index)
         if (json.cities) setCities(json.cities)
