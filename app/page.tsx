@@ -102,7 +102,7 @@ export default function GigShieldHome() {
             </div>
           </Link>
 
-          <Link href="/index" className="block group md:col-span-2">
+          <Link href="/leaderboard" className="block group md:col-span-2">
             <div className="bg-[#131313] md:bg-[#1c1b1b] hover:bg-[#1c1b1b] md:hover:bg-[#201f1f] border border-neutral-800/50 md:border-transparent md:hover:border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col md:flex-row md:items-center justify-between active:scale-[0.98]">
               <div className="mb-6 md:mb-0 max-w-sm">
                 <div className="w-12 h-12 rounded-2xl bg-[#00344b]/30 flex items-center justify-center mb-6 md:hidden border border-[#2fb9f9]/20">

@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Check My Pay", href: "/checker" },
-    { name: "Exploitation Index", href: "/index" },
+    { name: "Exploitation Index", href: "/leaderboard" },
     { name: "Dashboard", href: "/dashboard" },
   ]
 

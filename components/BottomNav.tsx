@@ -10,7 +10,7 @@ export function BottomNav() {
   const tabs = [
     { name: "Home", href: "/", icon: Home },
     { name: "Checker", href: "/checker", icon: Calculator },
-    { name: "Index", href: "/index", icon: BarChart3 },
+    { name: "Index", href: "/leaderboard", icon: BarChart3 },
     { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
   ]
 
