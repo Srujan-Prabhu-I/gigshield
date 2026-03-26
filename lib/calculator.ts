@@ -9,42 +9,40 @@ export interface WorkerInput {
 }
 
 export interface CalculationResult {
-  actualPayPerHour: number
-  fairMinimumPerHour: number
-  monthlyDeficit: number
-  annualDeficit: number
-  isUnderpaid: boolean
+  hourly_wage: number
+  expected_min: number
+  deficit: number
+  status: string
   deficitPercentage: number
-  workingDaysPerMonth: number
-  totalHoursPerMonth: number
 }
 
 export function calculateUnderpayment(input: WorkerInput): CalculationResult {
-  const workingDaysPerMonth = 26
-  const totalHoursPerMonth = input.hoursPerDay * workingDaysPerMonth
-  
-  // Gig Work Reality: Deduct 30% for fuel, bike maintenance, and phone data
-  const fuelAndMaintenanceOverhead = 0.30 
-  const netMonthlyPay = input.monthlyPay * (1 - fuelAndMaintenanceOverhead)
+  const hourly_wage = Math.round(input.monthlyPay / (input.hoursPerDay * 26))
+  const expected_min = 93 * input.hoursPerDay * 26
+  let deficit = expected_min - input.monthlyPay
 
-  const actualPayPerHour = netMonthlyPay / totalHoursPerMonth
-  const fairMinimumPerHour = TELANGANA_MIN_WAGE.semi_skilled.hourly
-  const fairMonthlyPay = fairMinimumPerHour * totalHoursPerMonth
-  const monthlyDeficit = Math.max(0, fairMonthlyPay - netMonthlyPay)
-  const annualDeficit = monthlyDeficit * 12
-  const isUnderpaid = monthlyDeficit > 0
-  const deficitPercentage = isUnderpaid
-    ? Math.round((monthlyDeficit / fairMonthlyPay) * 100)
+  if (deficit < 0) {
+    deficit = 0
+  }
+
+  let status = "Fair"
+  if (hourly_wage >= 93) {
+    status = "Fair"
+  } else if (hourly_wage >= 70) {
+    status = "Moderate Exploitation"
+  } else {
+    status = "Severe Exploitation"
+  }
+
+  const deficitPercentage = deficit > 0
+    ? Math.round((deficit / expected_min) * 100)
     : 0
 
   return {
-    actualPayPerHour: Math.round(actualPayPerHour),
-    fairMinimumPerHour,
-    monthlyDeficit: Math.round(monthlyDeficit),
-    annualDeficit: Math.round(annualDeficit),
-    isUnderpaid,
+    hourly_wage,
+    expected_min,
+    deficit,
+    status,
     deficitPercentage,
-    workingDaysPerMonth,
-    totalHoursPerMonth,
   }
 }

@@ -37,7 +37,7 @@ export default function AuthModal() {
               <span className="text-[10px] tracking-widest font-bold text-[#3fe56c] uppercase">Verify Identity</span>
             </div>
             <h3 className="text-white text-xl font-black tracking-tight">
-              {linkSent ? "Magic Link Sent" : "Better Protection"}
+              {linkSent ? "Verification Sent" : "Better Protection"}
             </h3>
             <p className="text-neutral-400 text-sm mt-1">
               {linkSent 
@@ -75,7 +75,7 @@ export default function AuthModal() {
               className="w-full h-12 rounded-xl bg-[#3fe56c] hover:bg-[#37cf61] text-black font-extrabold"
             >
               {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
-              Send Magic Link
+              {loading ? "Sending verification..." : "Verify Identity"}
             </Button>
           ) : (
             <div className="text-center space-y-3">
@@ -83,7 +83,7 @@ export default function AuthModal() {
                 <ShieldCheck className="w-6 h-6 text-[#3fe56c]" />
               </div>
               <p className="text-sm text-neutral-300">
-                Magic link sent to <span className="font-semibold text-white">{email}</span>
+                Verification link sent. Check your email.
               </p>
               <button
                 onClick={() => {

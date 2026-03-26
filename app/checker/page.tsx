@@ -68,16 +68,19 @@ export default function CheckerPage() {
     setRightsText("")
     
     try {
+      const formData = {
+        platform,
+        city,
+        ordersPerDay: Number(ordersPerDay),
+        hoursPerDay: Number(hoursPerDay),
+        monthlyPay: Number(monthlyPay),
+      }
+      console.log("CALC INPUT:", formData)
+
       const res = await fetch("/api/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          platform,
-          city,
-          ordersPerDay: Number(ordersPerDay),
-          hoursPerDay: Number(hoursPerDay),
-          monthlyPay: Number(monthlyPay),
-        })
+        body: JSON.stringify(formData)
       })
 
       const data = await res.json()
@@ -85,6 +88,7 @@ export default function CheckerPage() {
       if (!res.ok) throw new Error(data.error || "Failed to calculate")
       
       setResult(data.result)
+      console.log("CALC OUTPUT:", data.result)
 
       // Insert earnings_log after successful calculation
       const payload = {
@@ -93,6 +97,7 @@ export default function CheckerPage() {
         orders_per_day: Number(ordersPerDay) || 0,
         hours_per_day: Number(hoursPerDay) || 0,
         monthly_earnings: Number(monthlyPay) || 0,
+        calculated_deficit: data.result.deficit,
         device_id: crypto.randomUUID(),
       }
 
@@ -128,8 +133,8 @@ export default function CheckerPage() {
         body: JSON.stringify({
           language,
           platform,
-          monthlyDeficit: calculation.monthlyDeficit,
-          isUnderpaid: calculation.isUnderpaid,
+          monthlyDeficit: calculation.deficit,
+          isUnderpaid: calculation.deficit > 0,
         })
       })
       const data = await res.json()
@@ -146,9 +151,10 @@ export default function CheckerPage() {
   const getShareText = () => {
     if (!result) return ""
     const url = "https://gigshield-six.vercel.app"
-    return result.isUnderpaid
-      ? `*[GigShield Wage Alert]*\n\nI checked my real earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n- Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThis includes petrol and bike maintenance deduction.\n\nCheck if YOU are being underpaid:\n${url}`
-      : `*[GigShield Verified]*\n\nI checked my earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy pay meets the Telangana legal standard!\n\nCheck your own pay:\n${url}`
+    const isUnderpaid = result.deficit > 0
+    return isUnderpaid
+      ? `*[GigShield Wage Alert]*\n\nI checked my real earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹93/hr*\n- My Actual Pay: *₹${result.hourly_wage}/hr*\n- Stolen Wages: *₹${result.deficit}/month*\n\nThis includes petrol and bike maintenance deduction.\n\nCheck if YOU are being underpaid:\n${url}`
+      : `*[GigShield Verified]*\n\nI checked my earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹93/hr*\n- My Actual Pay: *₹${result.hourly_wage}/hr*\n\nMy pay meets the Telangana legal standard!\n\nCheck your own pay:\n${url}`
   }
 
   const handleShare = () => {
@@ -180,9 +186,9 @@ export default function CheckerPage() {
           orders_day: Number(ordersPerDay),
           hours_day: Number(hoursPerDay),
           monthly_pay: Number(monthlyPay),
-          actualPayPerHour: result.actualPayPerHour,
-          monthlyDeficit: result.monthlyDeficit,
-          fairMinimumPerHour: result.fairMinimumPerHour,
+          actualPayPerHour: result.hourly_wage,
+          monthlyDeficit: result.deficit,
+          fairMinimumPerHour: 93,
           device_id: deviceId,
         })
       })
@@ -311,35 +317,37 @@ export default function CheckerPage() {
         </Card>
 
         {/* HIGH-IMPACT RESULT SECTION */}
-        {result && (
+        {result && (() => {
+          const isUnderpaid = result.deficit > 0;
+          return (
           <div className="animate-in fade-in slide-in-from-bottom-5 duration-700 space-y-8 pb-10">
             
             {/* GIANT STATS CARD */}
             <div className={`relative overflow-hidden rounded-[32px] p-8 md:p-12 border ${
-              result.isUnderpaid 
+              isUnderpaid 
                 ? "bg-gradient-to-br from-[#2a1313] to-[#1c1b1b] border-[#ff4c4c]/30 shadow-[0_0_50px_rgba(255,76,76,0.15)]" 
                 : "bg-gradient-to-br from-[#0c2a15] to-[#1c1b1b] border-[#3ce36a]/30 shadow-[0_0_50px_rgba(60,227,106,0.15)]"
             }`}>
               
-              <div className="absolute top-0 left-0 w-full h-1 opacity-50 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: result.isUnderpaid ? '#ff7162' : '#3ce36a' }}></div>
+              <div className="absolute top-0 left-0 w-full h-1 opacity-50 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: isUnderpaid ? '#ff7162' : '#3ce36a' }}></div>
 
               <div className="text-center relative z-10 space-y-3">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-widest uppercase mb-4 ${
-                  result.isUnderpaid ? "bg-[#ff4c4c]/10 text-[#ff7162] border border-[#ff4c4c]/20" : "bg-[#3ce36a]/10 text-[#3ce36a] border border-[#3ce36a]/20"
+                  isUnderpaid ? "bg-[#ff4c4c]/10 text-[#ff7162] border border-[#ff4c4c]/20" : "bg-[#3ce36a]/10 text-[#3ce36a] border border-[#3ce36a]/20"
                 }`}>
-                  {result.isUnderpaid ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
-                  {result.isUnderpaid ? t.underpaid : t.fairPay}
+                  {isUnderpaid ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {isUnderpaid ? t.underpaid : t.fairPay}
                 </span>
                 
-                {result.isUnderpaid ? (
+                {isUnderpaid ? (
                   <>
                     <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-[#ff7162] tracking-tighter leading-tight drop-shadow-lg">
-                      ₹{result.monthlyDeficit.toLocaleString('en-IN')}
+                      ₹{result.deficit.toLocaleString('en-IN')}
                       <span className="block text-2xl md:text-3xl font-extrabold text-[#ff4c4c]/80 mt-2 uppercase tracking-tight">{t.deficit}</span>
                     </h2>
                     <div className="pt-6">
                       <p className="text-[#ffb3ae] font-medium text-lg leading-relaxed max-w-sm mx-auto">
-                        You are earning below the Telangana legal minimum wage.
+                        You are earning below the Telangana legal minimum wage. Status: {result.status}.
                       </p>
                     </div>
                   </>
@@ -351,7 +359,7 @@ export default function CheckerPage() {
                     </h2>
                     <div className="pt-6">
                       <p className="text-[#bbcbb8] font-medium text-lg leading-relaxed max-w-sm mx-auto">
-                        You are earning above the Telangana legal minimum wage.
+                        You are earning above the Telangana legal minimum wage. Status: {result.status}.
                       </p>
                     </div>
                   </>
@@ -361,17 +369,17 @@ export default function CheckerPage() {
               <div className="grid grid-cols-2 gap-4 mt-10 pt-8 border-t border-white/5 relative z-10">
                 <div className="bg-[#0e0e0e]/50 rounded-2xl p-5 text-center border border-white/5 hover:bg-[#0e0e0e]/80 transition-colors">
                   <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2">{t.yourPay}</p>
-                  <p className="text-3xl font-black text-white">₹{result.actualPayPerHour}<span className="text-base text-neutral-500">/hr</span></p>
+                  <p className="text-3xl font-black text-white">₹{result.hourly_wage}<span className="text-base text-neutral-500">/hr</span></p>
                 </div>
                 <div className="bg-[#0e0e0e]/50 rounded-2xl p-5 text-center border border-white/5 hover:bg-[#0e0e0e]/80 transition-colors">
                   <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-500 uppercase mb-2">{t.legalMin}</p>
-                  <p className="text-3xl font-black text-white">₹{result.fairMinimumPerHour}<span className="text-base text-neutral-500">/hr</span></p>
+                  <p className="text-3xl font-black text-white">₹93<span className="text-base text-neutral-500">/hr</span></p>
                 </div>
               </div>
             </div>
 
             {/* EXPLOITATION GAUGE */}
-            {result.isUnderpaid && (
+            {isUnderpaid && (
               <div className="flex flex-col items-center py-6">
                 <ExploitationGauge percentage={result.deficitPercentage} />
                 <p className="text-neutral-400 text-sm font-medium mt-4">Exploitation severity based on wage deficit</p>
@@ -434,7 +442,8 @@ export default function CheckerPage() {
             </Card>
 
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   )

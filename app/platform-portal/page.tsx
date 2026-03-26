@@ -89,13 +89,15 @@ export default function PlatformPortalPage() {
     setIsSubmitting(true)
 
     const body = {
-      platformName,
-      avgPayPerDelivery: Number(avgPayPerDelivery) || 0,
-      accidentInsurance,
-      grievancePortal,
-      minEarningsGuarantee,
+      platform: platformName,
+      avgPay: Number(avgPayPerDelivery) || 0,
+      hasInsurance: accidentInsurance,
+      hasGrievance: grievancePortal,
+      hasMinGuarantee: minEarningsGuarantee,
       weeklyHours: Number(weeklyHours) || 0,
     }
+
+    console.log("AUDIT PAYLOAD:", body)
 
     try {
       const res = await fetch("/api/platform-audit", {
@@ -105,6 +107,8 @@ export default function PlatformPortalPage() {
       })
 
       const data = await res.json()
+      console.log("AUDIT RESULT:", data)
+
       if (!res.ok) throw new Error(data.error || "Failed platform audit")
 
       setAuditResult(data)
@@ -126,10 +130,10 @@ export default function PlatformPortalPage() {
         </div>
 
         <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
-          <CardHeader className="border-b border-neutral-800 p-5">
+          <CardHeader className="border-b border-neutral-800 p-6">
             <CardTitle className="text-xl font-bold">Self Audit Tool</CardTitle>
           </CardHeader>
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="p-6 space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="space-y-1 text-sm text-neutral-300">
@@ -137,7 +141,7 @@ export default function PlatformPortalPage() {
                   <input
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#131313] border border-neutral-700"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111] text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-[#3fe56c] h-12"
                     placeholder="Swiggy"
                     required
                   />
@@ -149,7 +153,7 @@ export default function PlatformPortalPage() {
                     step="0.01"
                     value={avgPayPerDelivery || ""}
                     onChange={(e) => setAvgPayPerDelivery(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-[#131313] border border-neutral-700"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111] text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-[#3fe56c] h-12"
                     placeholder="80"
                     required
                   />
@@ -164,7 +168,7 @@ export default function PlatformPortalPage() {
                     type="checkbox"
                     checked={accidentInsurance}
                     onChange={(e) => setAccidentInsurance(e.target.checked)}
-                    className="accent-[#3fe56c]"
+                    className="accent-[#3fe56c] scale-110"
                   />
                 </label>
                 <label className="flex items-center justify-between rounded-lg border border-neutral-700 bg-[#131313] p-3" htmlFor="grievancePortal">
@@ -174,7 +178,7 @@ export default function PlatformPortalPage() {
                     type="checkbox"
                     checked={grievancePortal}
                     onChange={(e) => setGrievancePortal(e.target.checked)}
-                    className="accent-[#3fe56c]"
+                    className="accent-[#3fe56c] scale-110"
                   />
                 </label>
                 <label className="flex items-center justify-between rounded-lg border border-neutral-700 bg-[#131313] p-3" htmlFor="minEarningsGuarantee">
@@ -184,7 +188,7 @@ export default function PlatformPortalPage() {
                     type="checkbox"
                     checked={minEarningsGuarantee}
                     onChange={(e) => setMinEarningsGuarantee(e.target.checked)}
-                    className="accent-[#3fe56c]"
+                    className="accent-[#3fe56c] scale-110"
                   />
                 </label>
               </div>
@@ -196,7 +200,7 @@ export default function PlatformPortalPage() {
                   step="1"
                   value={weeklyHours || ""}
                   onChange={(e) => setWeeklyHours(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg bg-[#131313] border border-neutral-700"
+                  className="w-full px-3 py-2 rounded-lg bg-[#111] text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-[#3fe56c] h-12"
                   placeholder="40"
                   required
                 />
@@ -205,9 +209,9 @@ export default function PlatformPortalPage() {
               <Button
                 type="submit"
                 disabled={!canSubmit || isSubmitting}
-                className="w-full mt-2 py-3 font-bold bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black"
+                className="w-full mt-2 py-3 h-12 cursor-pointer z-10 relative bg-[#3fe56c] text-black font-semibold hover:bg-[#37cf61] transition"
               >
-                {isSubmitting ? "Auditing..." : "Run Self Audit"}
+                {isSubmitting ? "Analyzing compliance..." : "Run Self Audit"}
               </Button>
             </form>
           </CardContent>
@@ -221,10 +225,10 @@ export default function PlatformPortalPage() {
 
         {auditResult ? (
           <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
-            <CardHeader className="border-b border-neutral-800 p-5">
+            <CardHeader className="border-b border-neutral-800 p-6">
               <CardTitle className="text-xl font-bold">Audit Outcome</CardTitle>
             </CardHeader>
-            <CardContent className="p-5 space-y-4">
+            <CardContent className="p-6 space-y-4">
               <div className="space-y-2">
                 <p className="text-sm text-neutral-300">Score: {auditResult.score}/100</p>
                 <div className="flex items-center gap-2">

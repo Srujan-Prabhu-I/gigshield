@@ -9,6 +9,9 @@ export default function Navbar() {
   const pathname = usePathname()
   const { user, openAuthModal, signOut, mounted } = useAuth()
 
+  // Deployment tracer
+  console.log("GigShield Version: v2");
+
   const navLinks = [
     { name: "For Platforms", href: "/platform-portal" },
     { name: "Check My Pay", href: "/checker" },
