@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import type { User } from "@supabase/supabase-js"
 import {
@@ -27,15 +27,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const hasRunRef = useRef(false)
 
-  const ensureProfile = useCallback(async (currentUser: User | null) => {
-    if (!currentUser) return
+  useEffect(() => {
+    if (!user || hasRunRef.current) return
 
-    const { error } = await upsertProfileForUser(currentUser)
-    if (error) {
-      console.error("Failed to upsert profile:", error)
+    hasRunRef.current = true
+
+    const ensureProfile = async () => {
+      const { error } = await upsertProfileForUser(user)
+
+      if (error) {
+        console.error("Failed to upsert profile:", error)
+      }
     }
-  }, [])
+
+    ensureProfile()
+  }, [user])
 
   useEffect(() => {
     let mounted = true
@@ -44,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(async ({ user: currentUser }) => {
         if (!mounted) return
         setUser(currentUser ?? null)
-        await ensureProfile(currentUser ?? null)
       })
       .catch((error) => {
         console.error("Auth bootstrap error:", error)
@@ -56,14 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = onAuthStateChanged(async (_event, session) => {
       const nextUser = session?.user ?? null
       setUser(nextUser)
-      await ensureProfile(nextUser)
     })
 
     return () => {
       mounted = false
       data.subscription.unsubscribe()
     }
-  }, [ensureProfile])
+  }, [])
 
   const sendMagicLink = useCallback(async (input: { email?: string }) => {
     const { error } = await requestOtp(input)

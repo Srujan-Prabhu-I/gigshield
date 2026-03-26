@@ -14,6 +14,7 @@ import ExploitationGauge from "@/components/ExploitationGauge"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
 import { getDeviceId } from "@/lib/device"
+import { supabase } from "@/lib/supabase"
 import VerifyProtectionCTA from "@/components/VerifyProtectionCTA"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
@@ -84,7 +85,38 @@ export default function CheckerPage() {
       if (!res.ok) throw new Error(data.error || "Failed to calculate")
       
       setResult(data.result)
-      
+
+      // Insert earnings_log after successful calculation
+      const fallbackDeviceId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+      const deviceId = getDeviceId() || fallbackDeviceId
+      console.log("DEVICE ID USED:", deviceId)
+
+      const payload = {
+        platform: platform || "unknown",
+        city: city || "unknown",
+        orders_per_day: Number(ordersPerDay) || 0,
+        hours_per_day: Number(hoursPerDay) || 0,
+        monthly_earnings: Number(monthlyPay) || 0,
+        calculated_deficit: Number(data.result.monthlyDeficit) || 0,
+        device_id: deviceId,
+      }
+
+      console.log("🚀 INSERT PAYLOAD:", payload)
+      const { data: insertData, error: insertError } = await supabase
+        .from("earnings_logs")
+        .insert(payload)
+        .select()
+
+      console.log("📦 INSERT RESPONSE:", insertData)
+      console.log("❌ INSERT ERROR FULL:", JSON.stringify(insertError, null, 2))
+      if (insertError) {
+        console.error("❌ FINAL INSERT ERROR:", insertError)
+      }
+
       fetchRights(data.result)
 
     } catch (error: any) {
