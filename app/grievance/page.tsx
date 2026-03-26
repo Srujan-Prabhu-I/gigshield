@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Loader2, Download, Scale, AlertTriangle } from "lucide-react"
+import { useLanguage } from "@/lib/language-context"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
 
@@ -24,6 +25,8 @@ export default function GrievancePage() {
   const [issueType, setIssueType] = useState("")
   const [description, setDescription] = useState("")
   
+  const { language } = useLanguage()
+
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedLetter, setGeneratedLetter] = useState("")
 
@@ -52,6 +55,7 @@ export default function GrievancePage() {
           city,
           issue_type: issueType,
           description,
+          language,
         })
       })
 
@@ -203,7 +207,7 @@ export default function GrievancePage() {
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Drafting Legal Petition...
+                      {language === "hi" ? "Generating in Hindi..." : language === "te" ? "Generating in Telugu..." : "Drafting Legal Petition..."}
                     </>
                   ) : (
                     "Generate Official Complaint Letter"

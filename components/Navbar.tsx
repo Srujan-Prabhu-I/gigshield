@@ -2,11 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
 import LanguageToggle from "./LanguageToggle"
 
 export default function Navbar() {
-  const [lang, setLang] = useState("en")
   const pathname = usePathname()
 
   const navLinks = [
@@ -43,13 +41,13 @@ export default function Navbar() {
             )
           })}
           <div className="pl-6 flex items-center h-full">
-            <LanguageToggle lang={lang} setLang={setLang} />
+            <LanguageToggle />
           </div>
         </div>
         
         {/* Mobile menu toggle goes here */}
         <div className="md:hidden flex items-center">
-          <LanguageToggle lang={lang} setLang={setLang} />
+          <LanguageToggle />
         </div>
       </div>
     </nav>

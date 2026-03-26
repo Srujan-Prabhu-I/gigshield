@@ -14,7 +14,7 @@ const groq = new Groq({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { platform, city, issue_type, description } = body
+    const { platform, city, issue_type, description, language } = body
 
     if (!platform || !city || !issue_type || !description) {
       return NextResponse.json(
@@ -24,6 +24,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate formal complaint letter via Groq
+    const langInstruction = 
+      language === "hi" ? "Write the ENTIRE letter in Hindi language." :
+      language === "te" ? "Write the ENTIRE letter in Telugu language." :
+      "Write the ENTIRE letter in English language."
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       temperature: 0.2,
@@ -32,7 +37,7 @@ export async function POST(req: NextRequest) {
         {
           role: "system",
           content:
-            "You are a legal assistant helping Indian gig workers file formal complaints. Generate a formal complaint letter in English addressed to: The Labour Commissioner, Government of Telangana. Reference Telangana Gig and Platform Workers Act 2025 (sections 12, 15, 18). Demand investigation and compensation. Keep it under 400 words. Tone: formal, legally credible.",
+            `You are a legal assistant helping Indian gig workers file formal complaints. Generate a formal complaint letter addressed to: The Labour Commissioner, Government of Telangana. Reference Telangana Gig and Platform Workers Act 2025 (sections 12, 15, 18). Demand investigation and compensation. Keep it under 400 words. Tone: formal, legally credible. ${langInstruction}`,
         },
         {
           role: "user",

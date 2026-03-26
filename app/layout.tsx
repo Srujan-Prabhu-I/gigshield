@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Telugu, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -10,6 +10,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const notoSansTelugu = Noto_Sans_Telugu({
+  variable: "--font-noto-telugu",
+  subsets: ["telugu"],
+  display: "swap",
+});
+
+const notoSansDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-noto-devanagari",
+  subsets: ["devanagari"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,6 +43,7 @@ import Navbar from "@/components/Navbar";
 import { BottomNav } from "@/components/BottomNav";
 import PwaRegister from "@/components/PwaRegister";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "@/lib/language-context";
 
 export default function RootLayout({
   children,
@@ -39,14 +52,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[#0e0e0e]`}>
-        <Navbar />
-        <main className="grow pb-24 md:pb-8">
-          {children}
-        </main>
-        <BottomNav />
-        <PwaRegister />
-        <Toaster theme="dark" richColors position="top-center" />
+      <body className={`${geistSans.variable} ${geistMono.variable} ${notoSansTelugu.variable} ${notoSansDevanagari.variable} antialiased min-h-screen flex flex-col bg-[#0e0e0e]`}>
+        <LanguageProvider>
+          <Navbar />
+          <main className="grow pb-24 md:pb-8">
+            {children}
+          </main>
+          <BottomNav />
+          <PwaRegister />
+          <Toaster theme="dark" richColors position="top-center" />
+        </LanguageProvider>
       </body>
 
     </html>
