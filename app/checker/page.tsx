@@ -122,14 +122,7 @@ export default function CheckerPage() {
   const handleWhatsAppShare = () => {
     if (!result) return
     const text = getShareText()
-    // Use encodeURI + replace for emoji-safe WhatsApp URL encoding
-    const encoded = Array.from(text)
-      .map(char => {
-        const code = char.codePointAt(0)!
-        if (code > 127) return encodeURIComponent(char)
-        return char
-      })
-      .join('')
+    const encoded = encodeURIComponent(text)
     window.open(`https://wa.me/?text=${encoded}`, "_blank")
   }
 
