@@ -35,8 +35,8 @@ export default function PwaRegister() {
         // Store new version
         localStorage.setItem('app-version', currentVersion)
         
-        // Reload page to get fresh assets
-        window.location.reload()
+        // Don't auto-reload; let user refresh naturally or assets load from cleared cache
+        console.log('✅ Cache busted successfully')
       }
     }
     

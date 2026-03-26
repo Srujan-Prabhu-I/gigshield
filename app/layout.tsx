@@ -55,8 +55,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Generate version hash at runtime (changes on each build/deployment)
-  const appVersion = `${Date.now().toString(36)}`
+  // Static version for cache busting (updated on each deployment)
+  const appVersion = "3.0.1"
   
   return (
     <html lang="en">
