@@ -64,14 +64,13 @@ export function onAuthStateChanged(
 
 export async function upsertProfileForUser(user: User) {
   const supabase = getSupabaseAuthClient()
-  return supabase.from("profiles").upsert(
+  return supabase.from("profiles").upsert([
     {
       id: user.id,
       email: user.email ?? null,
       phone: user.phone ?? null,
       created_at: new Date().toISOString(),
-    },
-    { onConflict: "id" }
-  )
+    }
+  ] as any, { onConflict: "id" } as any)
 }
 
