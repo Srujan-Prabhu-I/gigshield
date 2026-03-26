@@ -9,43 +9,26 @@ export default function AuthModal() {
   const {
     authModalOpen,
     closeAuthModal,
-    sendOtp,
-    verifyCode,
+    sendMagicLink,
   } = useAuth()
 
   const [email, setEmail] = useState("")
-  const [otp, setOtp] = useState("")
-  const [otpSent, setOtpSent] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [linkSent, setLinkSent] = useState(false)
 
   if (!authModalOpen) return null
 
-  const onSendOtp = async () => {
+  const onSendMagicLink = async () => {
     setLoading(true)
-    const ok = await sendOtp({
+    const ok = await sendMagicLink({
       email: email.trim(),
     })
-    if (ok) setOtpSent(true)
-    setLoading(false)
-  }
-
-  const onVerifyOtp = async () => {
-    if (!otp.trim()) return
-    setLoading(true)
-    const ok = await verifyCode({
-      email: email.trim(),
-      token: otp.trim(),
-    })
-    if (ok) {
-      setOtp("")
-      setOtpSent(false)
-      closeAuthModal()
-    }
+    if (ok) setLinkSent(true)
     setLoading(false)
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-100 bg-black/70 backdrop-blur-sm flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-3xl border border-neutral-800 bg-[#151515] p-6 md:p-7 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -53,9 +36,14 @@ export default function AuthModal() {
               <ShieldCheck className="w-4 h-4 text-[#3fe56c]" />
               <span className="text-[10px] tracking-widest font-bold text-[#3fe56c] uppercase">Verify Identity</span>
             </div>
-            <h3 className="text-white text-xl font-black tracking-tight">Better Protection</h3>
+            <h3 className="text-white text-xl font-black tracking-tight">
+              {linkSent ? "Magic Link Sent" : "Better Protection"}
+            </h3>
             <p className="text-neutral-400 text-sm mt-1">
-              Verify with OTP for trusted reports and profile safeguards.
+              {linkSent 
+                ? "Check your email and click the login link to verify your identity."
+                : "Verify with magic link for trusted reports and profile safeguards."
+              }
             </p>
           </div>
           <button
@@ -68,53 +56,46 @@ export default function AuthModal() {
         </div>
 
         <div className="mt-4 space-y-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full h-12 rounded-xl border border-neutral-800 bg-[#101010] px-4 text-white focus:outline-none focus:border-[#3fe56c]"
-          />
-
-          {otpSent ? (
+          {!linkSent && (
             <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter OTP"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
               className="w-full h-12 rounded-xl border border-neutral-800 bg-[#101010] px-4 text-white focus:outline-none focus:border-[#3fe56c]"
             />
-          ) : null}
+          )}
         </div>
 
         <div className="mt-5 space-y-2">
-          {!otpSent ? (
+          {!linkSent ? (
             <Button
-              onClick={onSendOtp}
+              onClick={onSendMagicLink}
               disabled={loading || !email.trim()}
               className="w-full h-12 rounded-xl bg-[#3fe56c] hover:bg-[#37cf61] text-black font-extrabold"
             >
               {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
-              Send OTP
+              Send Magic Link
             </Button>
           ) : (
-            <>
-              <Button
-                onClick={onVerifyOtp}
-                disabled={loading || !otp.trim()}
-                className="w-full h-12 rounded-xl bg-[#3fe56c] hover:bg-[#37cf61] text-black font-extrabold"
-              >
-                {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
-                Verify OTP
-              </Button>
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-[#3fe56c]/20 flex items-center justify-center mx-auto">
+                <ShieldCheck className="w-6 h-6 text-[#3fe56c]" />
+              </div>
+              <p className="text-sm text-neutral-300">
+                Magic link sent to <span className="font-semibold text-white">{email}</span>
+              </p>
               <button
-                onClick={onSendOtp}
+                onClick={() => {
+                  setLinkSent(false)
+                  setEmail("")
+                }}
                 disabled={loading}
-                className="w-full text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                className="text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
               >
-                Resend OTP
+                Use different email
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

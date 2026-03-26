@@ -9,7 +9,6 @@ import {
   requestOtp,
   signOutAuth,
   upsertProfileForUser,
-  verifyOtp,
 } from "@/lib/supabase-auth"
 
 type AuthContextType = {
@@ -18,8 +17,7 @@ type AuthContextType = {
   authModalOpen: boolean
   openAuthModal: () => void
   closeAuthModal: () => void
-  sendOtp: (input: { email?: string }) => Promise<boolean>
-  verifyCode: (input: { email?: string; token: string }) => Promise<boolean>
+  sendMagicLink: (input: { email?: string }) => Promise<boolean>
   signOut: () => Promise<void>
 }
 
@@ -67,34 +65,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ensureProfile])
 
-  const sendOtp = useCallback(async (input: { email?: string }) => {
+  const sendMagicLink = useCallback(async (input: { email?: string }) => {
     const { error } = await requestOtp(input)
     if (error) {
-      console.error("OTP request failed:", error)
-      toast.error(error.message || "Failed to send OTP.")
+      console.error("Magic link request failed:", error)
+      toast.error(error.message || "Failed to send magic link.")
       return false
     }
-    toast.success("OTP sent. Please check your inbox/messages.")
+    toast.success("Magic link sent. Please check your email.")
     return true
   }, [])
-
-  const verifyCode = useCallback(
-    async (input: { email?: string; token: string }) => {
-      const { data, error } = await verifyOtp(input)
-      if (error) {
-        console.error("OTP verification failed:", error)
-        toast.error(error.message || "Failed to verify OTP.")
-        return false
-      }
-
-      const loggedInUser = data.user ?? null
-      setUser(loggedInUser)
-      await ensureProfile(loggedInUser)
-      toast.success("Verification successful.")
-      return true
-    },
-    [ensureProfile]
-  )
 
   const signOut = useCallback(async () => {
     const { error } = await signOutAuth()
@@ -114,11 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authModalOpen,
       openAuthModal: () => setAuthModalOpen(true),
       closeAuthModal: () => setAuthModalOpen(false),
-      sendOtp,
-      verifyCode,
+      sendMagicLink,
       signOut,
     }),
-    [authModalOpen, loading, sendOtp, signOut, user, verifyCode]
+    [authModalOpen, loading, sendMagicLink, signOut, user]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
