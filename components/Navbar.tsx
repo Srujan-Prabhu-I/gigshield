@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { ShieldCheck } from "lucide-react"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -22,11 +23,14 @@ export default function Navbar() {
   return (
     <nav className="bg-[#0e0e0e]/90 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6 h-16">
-        <Link href="/" className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-gradient-to-br from-[#3fe56c] to-[#00c853] flex items-center justify-center">
-            <span className="text-black text-[10px] font-black">G</span>
+        <Link href="/" className="group flex items-center gap-2.5 transition-opacity hover:opacity-90">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#3fe56c] to-[#00c853] shadow-[0_0_15px_rgba(63,229,108,0.3)] group-hover:shadow-[0_0_20px_rgba(63,229,108,0.5)] transition-all">
+            <ShieldCheck className="h-6 w-6 text-black fill-black/10" />
+            <div className="absolute inset-0 rounded-xl border border-white/20" />
           </div>
-          GigShield
+          <span className="text-xl font-black tracking-tighter text-white">
+            Gig<span className="text-[#3fe56c]">Shield</span>
+          </span>
         </Link>
         <div className="hidden md:flex items-center space-x-1 h-full">
           {navLinks.map((link) => {

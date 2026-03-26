@@ -232,24 +232,42 @@ export default function ImpactPage() {
                 <CardTitle className="text-xl font-bold text-white">Platform Compliance Summary</CardTitle>
               </CardHeader>
               <CardContent className="p-5 overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="text-neutral-300 border-b border-neutral-700">
+                <table className="w-full text-left text-sm border-separate border-spacing-y-2">
+                  <thead className="text-neutral-400 uppercase text-[10px] font-black tracking-widest">
                     <tr>
-                      <th className="py-2">Platform</th>
-                      <th className="py-2">Worker count</th>
-                      <th className="py-2">Avg deficit</th>
-                      <th className="py-2">Compliance</th>
-                      <th className="py-2">Trend</th>
+                      <th className="px-4 py-2">Platform</th>
+                      <th className="px-4 py-2">Worker count</th>
+                      <th className="px-4 py-2">Avg deficit</th>
+                      <th className="px-4 py-2 text-center">Compliance</th>
+                      <th className="px-4 py-2 text-right">Trend</th>
                     </tr>
                   </thead>
                   <tbody>
                     {groupByPlatform.map((p) => (
-                      <tr key={p.platform} className="border-b border-neutral-800">
-                        <td className="py-2">{p.platform}</td>
-                        <td className="py-2">{p.workerCount}</td>
-                        <td className="py-2">₹{p.avgDeficit.toFixed(0)}</td>
-                        <td className="py-2">{p.compliance}</td>
-                        <td className="py-2">{platformTrend[p.platform] === "improving" ? "↑ improving" : platformTrend[p.platform] === "worsening" ? "↓ worsening" : "→ stable"}</td>
+                      <tr key={p.platform} className="bg-neutral-900/30 hover:bg-neutral-900/60 transition-colors group">
+                        <td className="px-4 py-4 rounded-l-xl font-bold text-white group-hover:text-[#3fe56c] transition-colors">{p.platform}</td>
+                        <td className="px-4 py-4 text-neutral-200">{p.workerCount}</td>
+                        <td className="px-4 py-4 font-medium text-neutral-100 italic">₹{p.avgDeficit.toFixed(0)}</td>
+                        <td className="px-4 py-4 text-center">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                            p.compliance === "Compliant" 
+                              ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+                              : p.compliance === "Partially"
+                              ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+                              : "bg-red-500/10 text-red-500 border border-red-500/20"
+                          }`}>
+                            {p.compliance}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-right rounded-r-xl font-bold text-neutral-300">
+                          {platformTrend[p.platform] === "improving" ? (
+                            <span className="text-green-500">↑ improving</span>
+                          ) : platformTrend[p.platform] === "worsening" ? (
+                            <span className="text-red-500">↓ worsening</span>
+                          ) : (
+                            <span className="text-neutral-500">→ stable</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

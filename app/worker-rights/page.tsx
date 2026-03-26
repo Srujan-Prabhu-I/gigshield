@@ -75,10 +75,20 @@ export default function WorkerRightsPage() {
         return
       }
 
-      const actualPerHour = ((Number(entry.monthly_earnings) || 0) / ((Number(entry.hours_per_day) || 0) * 4)) || 0
-      const gapPerHour = Number(entry.calculated_deficit) ? (Number(entry.calculated_deficit) / ((Number(entry.hours_per_day) || 0) * 4)) : 0
+      const monthlyEarnings = Number(entry.monthly_earnings) || 0
+      const hoursPerDay = Number(entry.hours_per_day) || 0
+      const daysPerMonth = 26
+      
+      const actualPerHour = monthlyEarnings / (hoursPerDay * daysPerMonth) || 0
+      const expectedMinMonthly = 93 * hoursPerDay * daysPerMonth
+      const monthlyDeficit = Math.max(0, expectedMinMonthly - monthlyEarnings)
+      const deficitPerHour = monthlyDeficit / (hoursPerDay * daysPerMonth)
 
-      setRightsInsightMessage(`⚠️ You are earning ₹${actualPerHour.toFixed(0)}/hr — Minimum required: ₹93/hr — Deficit: ₹${gapPerHour.toFixed(0)}/hr`)
+      setRightsInsightMessage(
+        monthlyDeficit > 0 
+          ? `⚠️ You are earning ₹${actualPerHour.toFixed(0)}/hr — Minimum required: ₹93/hr — Monthly Deficit: ₹${monthlyDeficit.toFixed(0)}`
+          : `✅ Your pay (₹${actualPerHour.toFixed(0)}/hr) aligns with the Telangana Act minimum (₹93/hr).`
+      )
 
       const { data: cityData, error: cityError } = await supabase
         .from("earnings_logs")
@@ -139,16 +149,35 @@ export default function WorkerRightsPage() {
           </div>
         </div>
 
-        <Card className="border border-neutral-800 bg-[#1c1b1b] p-4">
-          <p className="text-sm text-neutral-200">{rightsInsightMessage || "No recent entries yet."}</p>
-          {cityBelowMinPct !== null && (
-            <p className="text-sm text-[#facc15]">
-              {cityBelowMinPct.toFixed(0)}% workers in your city earn below minimum wage
-            </p>
+        <Card className={`border ${latestEntry?.calculated_deficit > 0 ? 'border-red-900/50 bg-red-950/20' : 'border-[#3fe56c]/30 bg-[#3fe56c]/5'} p-6 rounded-2xl shadow-xl shadow-black/40`}>
+          <div className="flex items-center gap-3 mb-4">
+            {latestEntry?.calculated_deficit > 0 ? (
+              <ShieldAlert className="w-6 h-6 text-red-500" />
+            ) : (
+              <ShieldCheck className="w-6 h-6 text-[#3fe56c]" />
+            )}
+            <h2 className="text-xl font-bold text-white tracking-tight">Your Exploitation Status</h2>
+          </div>
+          
+          <p className="text-base font-medium text-neutral-100 leading-relaxed">{rightsInsightMessage || "No recent entries yet."}</p>
+          
+          {cityBelowMinPct !== null && cityBelowMinPct > 0 && (
+            <div className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+              </span>
+              <p className="text-xs font-bold text-yellow-500 uppercase tracking-wider">
+                {cityBelowMinPct.toFixed(0)}% workers in your city earn below minimum wage
+              </p>
+            </div>
           )}
-          <div className="mt-3">
+          
+          <div className="mt-6">
             <Link href="/grievance">
-              <Button className="w-full py-2 bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black">Report Violation</Button>
+              <Button className="w-full h-12 rounded-xl text-sm font-black tracking-wide bg-[#3fe56c] hover:bg-[#37cf61] text-black shadow-[0_0_20px_rgba(63,229,108,0.2)] transition-all active:scale-[0.98]">
+                Report Violation & Protect My Rights
+              </Button>
             </Link>
           </div>
         </Card>

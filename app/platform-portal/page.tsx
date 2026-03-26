@@ -162,35 +162,44 @@ export default function PlatformPortalPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <label className="flex items-center justify-between rounded-lg border border-neutral-700 bg-[#131313] p-3" htmlFor="accidentInsurance">
-                  Accident insurance
-                  <input
-                    id="accidentInsurance"
-                    type="checkbox"
-                    checked={accidentInsurance}
-                    onChange={(e) => setAccidentInsurance(e.target.checked)}
-                    className="accent-[#3fe56c] scale-110"
-                  />
+                <label className="flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-900/50 p-4 cursor-pointer hover:border-[#3fe56c]/30 transition-colors" htmlFor="accidentInsurance">
+                  <span className="font-semibold text-neutral-200">Accident insurance</span>
+                  <div className="relative flex items-center">
+                    <input
+                      id="accidentInsurance"
+                      type="checkbox"
+                      checked={accidentInsurance}
+                      onChange={(e) => setAccidentInsurance(e.target.checked)}
+                      className="peer h-6 w-6 cursor-pointer appearance-none rounded-md border-2 border-neutral-700 bg-neutral-800 transition-all checked:border-[#3fe56c] checked:bg-[#3fe56c]"
+                    />
+                    <ShieldCheck className="absolute h-4 w-4 text-black opacity-0 peer-checked:opacity-100 left-1 pointer-events-none" />
+                  </div>
                 </label>
-                <label className="flex items-center justify-between rounded-lg border border-neutral-700 bg-[#131313] p-3" htmlFor="grievancePortal">
-                  Grievance portal
-                  <input
-                    id="grievancePortal"
-                    type="checkbox"
-                    checked={grievancePortal}
-                    onChange={(e) => setGrievancePortal(e.target.checked)}
-                    className="accent-[#3fe56c] scale-110"
-                  />
+                <label className="flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-900/50 p-4 cursor-pointer hover:border-[#3fe56c]/30 transition-colors" htmlFor="grievancePortal">
+                  <span className="font-semibold text-neutral-200">Grievance portal</span>
+                  <div className="relative flex items-center">
+                    <input
+                      id="grievancePortal"
+                      type="checkbox"
+                      checked={grievancePortal}
+                      onChange={(e) => setGrievancePortal(e.target.checked)}
+                      className="peer h-6 w-6 cursor-pointer appearance-none rounded-md border-2 border-neutral-700 bg-neutral-800 transition-all checked:border-[#3fe56c] checked:bg-[#3fe56c]"
+                    />
+                    <ShieldCheck className="absolute h-4 w-4 text-black opacity-0 peer-checked:opacity-100 left-1 pointer-events-none" />
+                  </div>
                 </label>
-                <label className="flex items-center justify-between rounded-lg border border-neutral-700 bg-[#131313] p-3" htmlFor="minEarningsGuarantee">
-                  Min earnings guarantee
-                  <input
-                    id="minEarningsGuarantee"
-                    type="checkbox"
-                    checked={minEarningsGuarantee}
-                    onChange={(e) => setMinEarningsGuarantee(e.target.checked)}
-                    className="accent-[#3fe56c] scale-110"
-                  />
+                <label className="flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-900/50 p-4 cursor-pointer hover:border-[#3fe56c]/30 transition-colors" htmlFor="minEarningsGuarantee">
+                  <span className="font-semibold text-neutral-200">Min earnings guarantee</span>
+                  <div className="relative flex items-center">
+                    <input
+                      id="minEarningsGuarantee"
+                      type="checkbox"
+                      checked={minEarningsGuarantee}
+                      onChange={(e) => setMinEarningsGuarantee(e.target.checked)}
+                      className="peer h-6 w-6 cursor-pointer appearance-none rounded-md border-2 border-neutral-700 bg-neutral-800 transition-all checked:border-[#3fe56c] checked:bg-[#3fe56c]"
+                    />
+                    <ShieldCheck className="absolute h-4 w-4 text-black opacity-0 peer-checked:opacity-100 left-1 pointer-events-none" />
+                  </div>
                 </label>
               </div>
 
