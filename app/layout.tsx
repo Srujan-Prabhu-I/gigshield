@@ -55,10 +55,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Generate version hash at runtime (changes on each build/deployment)
+  const appVersion = `${Date.now().toString(36)}`
+  
   return (
     <html lang="en">
       <head>
         <meta httpEquiv="Cache-Control" content="no-store" />
+        <meta name="app-version" content={appVersion} />
+        <script dangerouslySetInnerHTML={{
+          __html: `window.APP_VERSION = "${appVersion}";`
+        }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${notoSansTelugu.variable} ${notoSansDevanagari.variable} antialiased min-h-screen flex flex-col bg-[#0e0e0e]`}>
         <AuthProvider>
