@@ -9,11 +9,14 @@ export async function requestOtp(input: { email?: string }) {
   const supabase = getSupabaseAuthClient()
 
   if (input.email) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://gigshield-six.vercel.app"
+    const redirectTo = `${origin}/auth/callback`
+    
     return supabase.auth.signInWithOtp({
       email: input.email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: "https://gigshield-six.vercel.app",
+        emailRedirectTo: redirectTo,
       },
     })
   }
