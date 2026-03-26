@@ -15,7 +15,7 @@ Built for the NYXORA MREM 2K26 Hackathon, GigShield empowers gig workers (delive
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Next.js 14 (App Router)
+- **Framework:** Next.js 16 (App Router)
 - **Database:** Supabase (PostgreSQL, Realtime subscriptions)
 - **AI Integration:** Groq SDK (llama-3.3-70b-versatile)
 - **Styling UI:** Tailwind CSS, shadcn/ui, FormKit AutoAnimate

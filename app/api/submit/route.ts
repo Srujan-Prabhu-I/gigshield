@@ -8,14 +8,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('ENV CHECK:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 20),
-      serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10),
-    })
-
     const body = await req.json()
-    console.log('BODY RECEIVED:', JSON.stringify(body))
-    console.log('Request body:', body)
 
     const { data, error } = await supabaseAdmin
       .from('submissions')

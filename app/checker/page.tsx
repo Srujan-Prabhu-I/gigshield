@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { CalculationResult } from "@/lib/calculator"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useRef } from "react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert, Calculator } from "lucide-react"
+import ExploitationGauge from "@/components/ExploitationGauge"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
 const CITIES = ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Secunderabad"]
@@ -103,14 +105,23 @@ export default function CheckerPage() {
     }
   }
 
-  const handleShare = () => {
-    if (!result) return
-    const text = result.isUnderpaid 
+  const getShareText = () => {
+    if (!result) return ""
+    return result.isUnderpaid 
       ? `🚨 Gig Worker Alert: I checked my pay for ${platform} in ${city}. The legal minimum wage in Telangana is ₹${result.fairMinimumPerHour}/hr, but I am making ₹${result.actualPayPerHour}/hr. I am being underpaid by ₹${result.monthlyDeficit}/month. Check your pay at GigShield!`
       : `✅ Good News: I checked my pay for ${platform} in ${city}. I am making ₹${result.actualPayPerHour}/hr which meets the Telangana legal minimum of ₹${result.fairMinimumPerHour}/hr. Check your pay at GigShield!`
-    
-    navigator.clipboard.writeText(text)
+  }
+
+  const handleShare = () => {
+    if (!result) return
+    navigator.clipboard.writeText(getShareText())
     toast.success("Result copied to clipboard!")
+  }
+
+  const handleWhatsAppShare = () => {
+    if (!result) return
+    const encoded = encodeURIComponent(getShareText())
+    window.open(`https://wa.me/?text=${encoded}`, "_blank")
   }
 
   const handleSubmitReport = async () => {
@@ -144,7 +155,7 @@ export default function CheckerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] py-8 px-4 sm:px-6 lg:px-8 selection:bg-[#ff7162]/30 text-white font-sans pb-32">
+    <div className="min-h-screen bg-[#0e0e0e] py-8 px-4 sm:px-6 lg:px-8 selection:bg-[#ff7162]/30 text-white font-sans pb-32 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-xl mx-auto space-y-10">
         
         {/* HEADER */}
@@ -175,7 +186,7 @@ export default function CheckerPage() {
                     <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                       <SelectGroup>
                         {PLATFORMS.map(p => (
-                          <SelectItem key={p} value={p} className="focus:bg-[#131313] focus:text-white cursor-pointer">{p}</SelectItem>
+                          <SelectItem key={p} value={p} className="focus:bg-[#131313]! focus:text-white! cursor-pointer">{p}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
@@ -191,7 +202,7 @@ export default function CheckerPage() {
                     <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                       <SelectGroup>
                         {CITIES.map(c => (
-                          <SelectItem key={c} value={c} className="focus:bg-[#131313] focus:text-white cursor-pointer">{c}</SelectItem>
+                          <SelectItem key={c} value={c} className="focus:bg-[#131313]! focus:text-white! cursor-pointer">{c}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
@@ -338,9 +349,24 @@ export default function CheckerPage() {
               </div>
             </div>
 
-            <Button onClick={handleShare} className="w-full h-14 rounded-2xl bg-[#1c1b1b] hover:bg-[#262626] border border-neutral-800 text-white font-bold transition-all active:scale-95 group">
-              <Share2 className="mr-2 h-5 w-5 text-neutral-400 group-hover:text-white transition-colors" /> Share Analysis
-            </Button>
+            {/* EXPLOITATION GAUGE */}
+            {result.isUnderpaid && (
+              <div className="flex flex-col items-center py-6">
+                <ExploitationGauge percentage={result.deficitPercentage} />
+                <p className="text-neutral-400 text-sm font-medium mt-4">Exploitation severity based on wage deficit</p>
+              </div>
+            )}
+
+            {/* SHARE BUTTONS */}
+            <div className="grid grid-cols-2 gap-4">
+              <Button onClick={handleShare} className="h-14 rounded-2xl bg-[#1c1b1b] hover:bg-[#262626] border border-neutral-800 text-white font-bold transition-all active:scale-95 group">
+                <Share2 className="mr-2 h-5 w-5 text-neutral-400 group-hover:text-white transition-colors" /> Copy
+              </Button>
+              <Button onClick={handleWhatsAppShare} className="h-14 rounded-2xl bg-[#1a3a1a] hover:bg-[#1f4a1f] border border-[#3ce36a]/30 text-[#3ce36a] font-bold transition-all active:scale-95">
+                <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </Button>
+            </div>
 
             {/* LEGAL RIGHTS & PETITION SECTION */}
             <Card className="bg-[#1c1b1b] border-neutral-800 rounded-[28px] overflow-hidden shadow-2xl">

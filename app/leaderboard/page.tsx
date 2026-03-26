@@ -77,7 +77,7 @@ export default function ExploitationIndex() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-neutral-50 px-4 py-8 md:py-16 selection:bg-red-500/30">
+    <div className="min-h-screen bg-[#0e0e0e] text-white p-4 md:p-8 font-sans pb-24 md:pb-8 selection:bg-blue-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-3xl mx-auto space-y-10">
         
         {/* TOP SECTION */}

@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Loader2, Download, Scale } from "lucide-react"
+import { Loader2, Download, Scale, AlertTriangle } from "lucide-react"
 
-const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido"]
+const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
 
 const ISSUE_TYPES = [
   "Underpayment",
@@ -100,7 +100,7 @@ export default function GrievancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white py-12 px-4 sm:px-6 lg:px-8 selection:bg-neutral-800">
+    <div className="min-h-screen bg-[#0e0e0e] text-white p-4 md:p-8 font-sans pb-24 md:pb-8 selection:bg-red-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-xl mx-auto space-y-8">
         
         {/* HEADER */}
@@ -112,28 +112,29 @@ export default function GrievancePage() {
         </div>
 
         {/* FORM */}
+        {/* FORM */}
         {!generatedLetter ? (
-          <Card className="bg-neutral-900 border-neutral-800 shadow-xl shadow-black/50">
-            <CardHeader>
-              <CardTitle className="text-white">Incident Details</CardTitle>
-              <CardDescription className="text-neutral-400">
+          <Card className="bg-[#1c1b1b] border-neutral-800 shadow-xl shadow-black/50 overflow-hidden rounded-[28px]">
+            <CardHeader className="bg-[#131313] border-b border-neutral-800/50 p-6 md:p-8">
+              <CardTitle className="text-white text-xl">Incident Details</CardTitle>
+              <CardDescription className="text-neutral-400 font-medium">
                 Provide specifics so the AI can draft a strong legal argument.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
+            <CardContent className="p-6 md:p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-neutral-300">Platform</label>
+                    <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">Platform</label>
                     <Select value={platform} onValueChange={(val) => setPlatform(val || "")}>
-                      <SelectTrigger className="bg-neutral-950 border-neutral-800 text-neutral-200">
+                      <SelectTrigger className="h-12 bg-[#0e0e0e] border-neutral-800 text-neutral-200 rounded-xl focus:ring-[#3ce36a]/30">
                         <SelectValue placeholder="Select platform" />
                       </SelectTrigger>
-                      <SelectContent className="bg-neutral-900 border-neutral-800 text-white">
+                      <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                         <SelectGroup>
                           {PLATFORMS.map(p => (
-                            <SelectItem key={p} value={p}>{p}</SelectItem>
+                            <SelectItem key={p} value={p} className="focus:bg-[#131313]! focus:text-[#3ce36a]!">{p}</SelectItem>
                           ))}
                         </SelectGroup>
                       </SelectContent>
@@ -141,28 +142,28 @@ export default function GrievancePage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-neutral-300">City</label>
+                    <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">City</label>
                     <input
                       type="text"
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="e.g. Hyderabad"
-                      className="flex h-10 w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-600"
+                      className="flex h-12 w-full rounded-xl border border-neutral-800 bg-[#0e0e0e] px-4 py-2 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#3ce36a]/30 placeholder:text-neutral-600 transition-shadow"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-neutral-300">Issue Type</label>
+                  <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">Issue Type</label>
                   <Select value={issueType} onValueChange={(val) => setIssueType(val || "")}>
-                    <SelectTrigger className="bg-neutral-950 border-neutral-800 text-neutral-200">
+                    <SelectTrigger className="h-12 bg-[#0e0e0e] border-neutral-800 text-neutral-200 rounded-xl focus:ring-[#3ce36a]/30">
                       <SelectValue placeholder="Select type of issue" />
                     </SelectTrigger>
-                    <SelectContent className="bg-neutral-900 border-neutral-800 text-white">
+                    <SelectContent className="bg-[#1c1b1b] border-neutral-800 text-white rounded-xl">
                       <SelectGroup>
                         {ISSUE_TYPES.map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type} value={type} className="focus:bg-[#131313]! focus:text-[#3ce36a]!">{type}</SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
@@ -170,23 +171,26 @@ export default function GrievancePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <label className="text-sm font-semibold text-neutral-300">Description</label>
-                    <span className={`text-xs ${description.length < 50 ? "text-red-400" : "text-neutral-500"}`}>
+                  <div className="flex justify-between items-baseline">
+                    <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">Description</label>
+                    <span className={`text-xs font-bold ${description.length < 50 ? "text-red-400" : "text-[#3ce36a]"}`}>
                       {description.length}/50 min chars
                     </span>
                   </div>
                   <textarea
                     required
-                    rows={5}
+                    rows={6}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe what happened in detail..."
-                    className={`flex w-full rounded-md border bg-neutral-950 px-3 py-2 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-600 resize-none ${description.length > 0 && description.length < 50 ? 'border-red-500/50' : 'border-neutral-800'}`}
+                    placeholder="Describe what happened in detail (e.g., specific shifts, missing payments, or deactivation details)..."
+                    className={`flex w-full rounded-xl border bg-[#0e0e0e] p-4 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#3ce36a]/30 placeholder:text-neutral-600 resize-none transition-all ${
+                      description.length > 0 && description.length < 50 ? 'border-red-500/50' : 'border-neutral-800'
+                    }`}
                   />
                   {description.length > 0 && description.length < 50 && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Please enter at least 50 characters to provide enough context.
+                    <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      Please enter at least 50 characters to provide enough context for the legal argument.
                     </p>
                   )}
                 </div>
@@ -194,12 +198,12 @@ export default function GrievancePage() {
                 <Button 
                   type="submit" 
                   disabled={isGenerating || description.length < 50 || !platform || !city || !issueType}
-                  className="w-full bg-white hover:bg-neutral-200 text-black font-bold h-12 rounded-xl mt-6 disabled:bg-neutral-800 disabled:text-neutral-600"
+                  className="w-full bg-[#3fe56c] hover:bg-[#3ce36a] text-[#002108] font-extrabold text-base h-14 rounded-2xl mt-8 disabled:bg-neutral-800 disabled:text-neutral-600 transition-all active:scale-[0.98] shadow-lg shadow-[#3fe56c]/20 disabled:shadow-none"
                 >
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating your complaint letter...
+                      Drafting Legal Petition...
                     </>
                   ) : (
                     "Generate Official Complaint Letter"
@@ -210,31 +214,31 @@ export default function GrievancePage() {
           </Card>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-500">
-            <Card className="bg-neutral-900 border-neutral-800 shadow-2xl shadow-black/50">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-12 h-12 bg-neutral-800 rounded-full flex items-center justify-center mb-4 border border-neutral-700">
-                  <Download className="w-6 h-6 text-white" />
+            <Card className="bg-[#1c1b1b] border-neutral-800 shadow-2xl shadow-black/50 rounded-[28px] overflow-hidden">
+              <CardHeader className="text-center pb-2 bg-[#131313] border-b border-neutral-800/50 p-8">
+                <div className="mx-auto w-14 h-14 bg-[#3ce36a]/10 rounded-full flex items-center justify-center mb-5 border border-[#3ce36a]/20">
+                  <Scale className="w-7 h-7 text-[#3ce36a]" />
                 </div>
-                <CardTitle className="text-2xl text-white">Letter Generated</CardTitle>
-                <CardDescription className="text-neutral-400">
-                  Your official complaint is ready.
+                <CardTitle className="text-2xl text-white">Letter Drafted Successfully</CardTitle>
+                <CardDescription className="text-neutral-400 font-medium mt-2">
+                  Your official legal complaint is ready for submission to the Labour Commissioner.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6 pt-6 text-center">
+              <CardContent className="space-y-6 pt-8 p-6 md:p-8 text-center bg-[#1c1b1b]">
                 
-                <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-lg text-left text-sm text-neutral-300 h-64 overflow-y-auto font-serif">
-                  <p className="whitespace-pre-wrap leading-relaxed">
+                <div className="p-6 bg-[#0e0e0e] border border-neutral-800 rounded-2xl text-left text-sm text-neutral-300 h-72 overflow-y-auto font-serif shadow-inner">
+                  <p className="whitespace-pre-wrap leading-relaxed text-[15px]">
                     {generatedLetter}
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                   <Button 
                     onClick={() => handleDownloadPDF()} 
-                    className="w-full h-12 font-bold text-lg bg-white hover:bg-neutral-200 text-black rounded-xl border-none"
+                    className="h-14 font-bold text-base bg-white hover:bg-neutral-200 text-black rounded-xl border-none active:scale-[0.98] transition-transform"
                   >
                     <Download className="mr-2 h-5 w-5" />
-                    Download PDF Letter
+                    Download PDF
                   </Button>
                   
                   <Button 
@@ -243,9 +247,9 @@ export default function GrievancePage() {
                       setGeneratedLetter("")
                       setDescription("")
                     }} 
-                    className="w-full bg-transparent border-neutral-800 text-neutral-300 hover:bg-neutral-900 hover:text-white"
+                    className="h-14 bg-transparent border-neutral-800 text-neutral-300 hover:bg-[#131313] hover:text-white font-bold rounded-xl active:scale-[0.98] transition-all"
                   >
-                    File Another Grievance
+                    File Another Case
                   </Button>
                 </div>
               </CardContent>

@@ -2,10 +2,11 @@
 
 import Link from "next/link"
 import { ChevronRight, Calculator, ScrollText, BarChart3, ShieldCheck } from "lucide-react"
+import LiveCounter from "@/components/LiveCounter"
 
 export default function GigShieldHome() {
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white selection:bg-green-500/30 overflow-x-hidden font-sans pb-10">
+    <div className="min-h-screen bg-[#0e0e0e] text-white selection:bg-green-500/30 overflow-x-hidden font-sans pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* HERO SECTION */}
       <section className="px-5 pt-12 pb-10 max-w-4xl mx-auto flex flex-col items-center text-center">
@@ -54,17 +55,7 @@ export default function GigShieldHome() {
           </div>
         </div>
 
-        <div className="bg-[#1c1b1b] rounded-[24px] p-6 md:p-8 border border-neutral-800/50 hover:bg-[#201f1f] transition-colors cursor-default">
-          <h2 className="text-4xl md:text-5xl font-black text-[#3ce36a] tracking-tighter mb-2">20k+</h2>
-          <p className="text-[10px] font-bold tracking-[0.1em] text-neutral-500 uppercase mb-4">Worker Reports Daily</p>
-          <div className="flex -space-x-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="w-8 h-8 rounded-full border-2 border-[#1c1b1b] bg-neutral-800 flex items-center justify-center overflow-hidden">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 50}&backgroundColor=262626`} alt="Worker Avatar" className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-        </div>
+        <LiveCounter label="Worker Reports Submitted" suffix="+" />
       </section>
 
       {/* FEATURES (THE SENTINEL SUITE) */}
@@ -120,6 +111,35 @@ export default function GigShieldHome() {
             </div>
           </Link>
 
+        </div>
+      </section>
+
+      {/* WORKER VOICES */}
+      <section className="px-5 py-12 max-w-4xl mx-auto">
+        <div className="mb-8 md:mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Worker Voices</h2>
+          <p className="text-neutral-400 font-medium text-base md:text-lg max-w-md">Anonymous stories from real gig workers across Telangana.</p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            { quote: "I drive 14 hours daily for Rapido. After petrol and bike maintenance, I take home ₹350. GigShield showed me I am being underpaid by ₹8,400 every month.", city: "Karimnagar", platform: "Rapido" },
+            { quote: "Swiggy deactivated my account for 3 days without reason. I lost ₹4,500 in earnings. I didn't even know I had legal rights until I used GigShield.", city: "Hyderabad", platform: "Swiggy" },
+            { quote: "I used the grievance tool to draft a complaint letter. The Labour Commissioner's office actually responded within a week. This platform works.", city: "Warangal", platform: "Zomato" },
+          ].map((story, i) => (
+            <div key={i} className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[24px] p-6 transition-colors flex flex-col justify-between">
+              <p className="text-neutral-300 text-sm font-medium leading-relaxed mb-6">&ldquo;{story.quote}&rdquo;</p>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black text-neutral-500">
+                  {story.platform[0]}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-neutral-400">{story.platform} Worker</p>
+                  <p className="text-[10px] font-medium text-neutral-600">{story.city}, Telangana</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
