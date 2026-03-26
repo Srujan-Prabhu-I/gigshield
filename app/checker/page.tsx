@@ -108,8 +108,8 @@ export default function CheckerPage() {
   const getShareText = () => {
     if (!result) return ""
     return result.isUnderpaid 
-      ? `🚨 *GigShield Wage Alert* 🚨\n\nI just checked my real net-earnings for *${platform}* in ${city}.\n\n⚖️ Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n📉 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n💸 Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThe apps are hiding our petrol & bike maintenance costs.\n\n🔥 Check if you are being underpaid right now:\n🔗 https://gigshield-six.vercel.app/`
-      : `✅ *GigShield Verified* ✅\n\nI just checked my earnings for *${platform}* in ${city}.\n\n⚖️ Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n📈 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy algorithmic pay currently meets the legal standard!\n\n🔥 Check your own pay right now:\n🔗 https://gigshield-six.vercel.app/`
+      ? `[!] *GigShield Wage Alert* [!]\n\nI just checked my real net-earnings for *${platform}* in ${city}.\n\n- Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n- Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThe apps are hiding our petrol & bike maintenance costs.\n\n-> Check if you are being underpaid right now:\nhttps://gigshield-six.vercel.app`
+      : `[✓] *GigShield Verified* [✓]\n\nI just checked my earnings for *${platform}* in ${city}.\n\n- Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy algorithmic pay currently meets the legal standard!\n\n-> Check your own pay right now:\nhttps://gigshield-six.vercel.app`
   }
 
   const handleShare = () => {
