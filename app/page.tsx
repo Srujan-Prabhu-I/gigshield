@@ -10,14 +10,6 @@ export default function GigShieldHome() {
       
       {/* HERO SECTION */}
       <section className="px-5 pt-12 pb-10 max-w-4xl mx-auto flex flex-col items-center text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 mb-8 self-center">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-[10px] font-bold text-neutral-300 tracking-widest uppercase">Live across India</span>
-        </div>
-
         <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-5 text-white">
           15 Million Workers.<br />
           Zero Protection.<br />
