@@ -44,6 +44,8 @@ import { BottomNav } from "@/components/BottomNav";
 import PwaRegister from "@/components/PwaRegister";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/lib/language-context";
+import { AuthProvider } from "@/lib/auth-context";
+import AuthModal from "@/components/AuthModal";
 
 export default function RootLayout({
   children,
@@ -53,15 +55,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${notoSansTelugu.variable} ${notoSansDevanagari.variable} antialiased min-h-screen flex flex-col bg-[#0e0e0e]`}>
-        <LanguageProvider>
-          <Navbar />
-          <main className="grow pb-24 md:pb-8">
-            {children}
-          </main>
-          <BottomNav />
-          <PwaRegister />
-          <Toaster theme="dark" richColors position="top-center" />
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <Navbar />
+            <main className="grow pb-24 md:pb-8">
+              {children}
+            </main>
+            <BottomNav />
+            <PwaRegister />
+            <AuthModal />
+            <Toaster theme="dark" richColors position="top-center" />
+          </LanguageProvider>
+        </AuthProvider>
       </body>
 
     </html>

@@ -10,28 +10,118 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
 
-    const { data, error } = await supabaseAdmin
-      .from('submissions')
-      .insert([{
-        platform: body.platform,
-        city: body.city,
-        orders_day: body.orders_day ?? 0,
-        hours_day: body.hours_day ?? 0,
-        monthly_pay: body.monthly_pay ?? 0,
-        pay_per_hr: body.actualPayPerHour,
-        deficit: body.monthlyDeficit,
-      }])
+    // Generate a fallback device id (client normally provides it via getDeviceId()).
+    const deviceId =
+      body.device_id ??
+      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : null)
 
-    if (error) {
-      console.error('Supabase error:', JSON.stringify(error))
-      return NextResponse.json({ 
-        error: error.message, 
-        code: error.code,
-        details: error.details 
-      }, { status: 500 })
+    // 1) Preserve existing leaderboard behavior.
+    const { data: submissionsData, error: submissionsError } = await supabaseAdmin
+      .from("submissions")
+      .insert([
+        {
+          platform: body.platform,
+          city: body.city,
+          orders_day: body.orders_day ?? 0,
+          hours_day: body.hours_day ?? 0,
+          monthly_pay: body.monthly_pay ?? 0,
+          pay_per_hr: body.actualPayPerHour,
+          deficit: body.monthlyDeficit,
+        },
+      ])
+
+    if (submissionsError) {
+      console.error(
+        "[api/submit] submissions insert error. payload=",
+        {
+          platform: body.platform,
+          city: body.city,
+          orders_day: body.orders_day ?? 0,
+          hours_day: body.hours_day ?? 0,
+          monthly_pay: body.monthly_pay ?? 0,
+          pay_per_hr: body.actualPayPerHour,
+          deficit: body.monthlyDeficit,
+          device_id: deviceId,
+        },
+        "error=",
+        submissionsError
+      )
+    } else {
+      console.log("[api/submit] submissions insert success:", submissionsData)
     }
 
-    return NextResponse.json({ success: true, data })
+    if (submissionsError) {
+      return NextResponse.json(
+        {
+          error: submissionsError.message,
+          code: submissionsError.code,
+          details: submissionsError.details,
+        },
+        { status: 500 }
+      )
+    }
+
+    // 2) Insert into earnings_logs for the new production feature set.
+    console.log("[api/submit] earnings_logs insert payload:", {
+      platform: body.platform,
+      city: body.city,
+      orders_per_day: Number(body.orders_day ?? 0),
+      hours_per_day: Number(body.hours_day ?? 0),
+      monthly_earnings: Number(body.monthly_pay ?? 0),
+      calculated_deficit: Number(body.monthlyDeficit ?? 0),
+      device_id: deviceId,
+      user_id: null,
+    })
+    const { data: earningsLogsData, error: earningsLogsError } = await supabaseAdmin
+      .from("earnings_logs")
+      .insert([
+        {
+          platform: body.platform,
+          city: body.city,
+          orders_per_day: Number(body.orders_day ?? 0),
+          hours_per_day: Number(body.hours_day ?? 0),
+          monthly_earnings: Number(body.monthly_pay ?? 0),
+          calculated_deficit: Number(body.monthlyDeficit ?? 0),
+          device_id: deviceId,
+          user_id: null,
+        },
+      ])
+
+    if (earningsLogsError) {
+      console.error(
+        "[api/submit] earnings_logs insert error. payload=",
+        {
+          platform: body.platform,
+          city: body.city,
+          orders_per_day: Number(body.orders_day ?? 0),
+          hours_per_day: Number(body.hours_day ?? 0),
+          monthly_earnings: Number(body.monthly_pay ?? 0),
+          calculated_deficit: Number(body.monthlyDeficit ?? 0),
+          device_id: deviceId,
+          user_id: null,
+        },
+        "error=",
+        earningsLogsError
+      )
+      return NextResponse.json(
+        {
+          error: earningsLogsError.message,
+          code: earningsLogsError.code,
+          details: earningsLogsError.details,
+        },
+        { status: 500 }
+      )
+    }
+
+    console.log("[api/submit] earnings_logs insert success:", earningsLogsData)
+
+    return NextResponse.json({
+      success: true,
+      submissions: submissionsData,
+      earnings_logs: earningsLogsData,
+    })
 
   } catch (err: any) {
     console.error('Caught exception:', err)

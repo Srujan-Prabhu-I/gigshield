@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import LanguageToggle from "./LanguageToggle"
+import { useAuth } from "@/lib/auth-context"
 
 export default function Navbar() {
   const pathname = usePathname()
+  const { user, openAuthModal, signOut } = useAuth()
 
   const navLinks = [
     { name: "Check My Pay", href: "/checker" },
@@ -41,12 +43,35 @@ export default function Navbar() {
             )
           })}
           <div className="pl-6 flex items-center h-full">
+            {user ? (
+              <button
+                onClick={signOut}
+                className="mr-3 px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                onClick={openAuthModal}
+                className="mr-3 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#3fe56c] text-black hover:bg-[#37cf61] transition-colors"
+              >
+                Verify
+              </button>
+            )}
             <LanguageToggle />
           </div>
         </div>
         
         {/* Mobile menu toggle goes here */}
         <div className="md:hidden flex items-center">
+          {!user ? (
+            <button
+              onClick={openAuthModal}
+              className="mr-2 px-2.5 py-1 text-[11px] font-bold rounded-md bg-[#3fe56c] text-black"
+            >
+              Verify
+            </button>
+          ) : null}
           <LanguageToggle />
         </div>
       </div>

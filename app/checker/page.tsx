@@ -13,6 +13,8 @@ import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert, Cal
 import ExploitationGauge from "@/components/ExploitationGauge"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
+import { getDeviceId } from "@/lib/device"
+import VerifyProtectionCTA from "@/components/VerifyProtectionCTA"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
 const CITIES = ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Secunderabad"]
@@ -143,6 +145,7 @@ export default function CheckerPage() {
     if (!result) return
     setIsSubmittingReport(true)
     try {
+      const device_id = getDeviceId()
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,6 +158,7 @@ export default function CheckerPage() {
           actualPayPerHour: result.actualPayPerHour,
           monthlyDeficit: result.monthlyDeficit,
           fairMinimumPerHour: result.fairMinimumPerHour,
+          device_id,
         })
       })
       
@@ -182,6 +186,7 @@ export default function CheckerPage() {
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">{t.checkMyPay}</h1>
           <p className="text-neutral-400 font-medium max-w-sm mx-auto">Verify your earnings against the Telangana legal minimum wage (2025).</p>
         </div>
+        <VerifyProtectionCTA />
 
         {/* INPUT FORM */}
         <Card className="bg-[#1c1b1b] border border-neutral-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] rounded-[24px] overflow-hidden">
