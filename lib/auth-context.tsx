@@ -14,6 +14,7 @@ import {
 type AuthContextType = {
   user: User | null
   loading: boolean
+  mounted: boolean
   authModalOpen: boolean
   openAuthModal: () => void
   closeAuthModal: () => void
@@ -27,7 +28,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const hasRunRef = useRef(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!user || hasRunRef.current) return
@@ -97,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       loading,
+      mounted,
       authModalOpen,
       openAuthModal: () => setAuthModalOpen(true),
       closeAuthModal: () => setAuthModalOpen(false),

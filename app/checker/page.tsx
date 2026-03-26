@@ -13,7 +13,7 @@ import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert, Cal
 import ExploitationGauge from "@/components/ExploitationGauge"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
-import { getDeviceId } from "@/lib/device"
+
 import { supabase } from "@/lib/supabase"
 import VerifyProtectionCTA from "@/components/VerifyProtectionCTA"
 
@@ -87,34 +87,27 @@ export default function CheckerPage() {
       setResult(data.result)
 
       // Insert earnings_log after successful calculation
-      const fallbackDeviceId =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(16).slice(2)}`
-
-      const deviceId = getDeviceId() || fallbackDeviceId
-      console.log("DEVICE ID USED:", deviceId)
-
       const payload = {
         platform: platform || "unknown",
         city: city || "unknown",
         orders_per_day: Number(ordersPerDay) || 0,
         hours_per_day: Number(hoursPerDay) || 0,
         monthly_earnings: Number(monthlyPay) || 0,
-        calculated_deficit: Number(data.result.monthlyDeficit) || 0,
-        device_id: deviceId,
+        device_id: crypto.randomUUID(),
       }
 
-      console.log("🚀 INSERT PAYLOAD:", payload)
+      console.log("INSERT PAYLOAD:", payload)
       const { data: insertData, error: insertError } = await supabase
         .from("earnings_logs")
-        .insert(payload)
-        .select()
+        .insert([payload])
 
-      console.log("📦 INSERT RESPONSE:", insertData)
-      console.log("❌ INSERT ERROR FULL:", JSON.stringify(insertError, null, 2))
+      console.log("INSERT RESULT:", insertData)
+      console.log("INSERT ERROR FULL:", JSON.stringify(insertError, null, 2))
+
       if (insertError) {
-        console.error("❌ FINAL INSERT ERROR:", insertError)
+        console.error("FINAL INSERT ERROR:", insertError)
+        alert("Insert failed. Check console.")
+        return
       }
 
       fetchRights(data.result)
@@ -177,7 +170,7 @@ export default function CheckerPage() {
     if (!result) return
     setIsSubmittingReport(true)
     try {
-      const device_id = getDeviceId()
+      const deviceId = crypto.randomUUID()
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,7 +183,7 @@ export default function CheckerPage() {
           actualPayPerHour: result.actualPayPerHour,
           monthlyDeficit: result.monthlyDeficit,
           fairMinimumPerHour: result.fairMinimumPerHour,
-          device_id,
+          device_id: deviceId,
         })
       })
       
