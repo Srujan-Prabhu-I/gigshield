@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Loader2, Download, Scale, AlertTriangle } from "lucide-react"
+import { Loader2, Download, Scale, AlertTriangle, Mic } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 
 const PLATFORMS = ["Swiggy", "Zomato", "Ola", "Uber", "Rapido", "Urban Company"]
@@ -29,6 +29,50 @@ export default function GrievancePage() {
 
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedLetter, setGeneratedLetter] = useState("")
+  const [isListening, setIsListening] = useState(false)
+
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      toast.error("Voice input is not supported in your browser.")
+      return
+    }
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+
+    const langMap: Record<string, string> = {
+      en: "en-IN",
+      hi: "hi-IN",
+      te: "te-IN"
+    }
+    
+    recognition.lang = langMap[language] || "en-IN"
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onstart = () => {
+      setIsListening(true)
+      toast.success("Listening... Speak your grievance now.", { duration: 4000 })
+    }
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setDescription((prev) => prev ? `${prev} ${transcript}` : transcript)
+    }
+
+    recognition.onerror = (event: any) => {
+      if (event.error !== 'no-speech') {
+        toast.error("Failed to capture voice. Please try again.")
+      }
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognition.start()
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -176,7 +220,31 @@ export default function GrievancePage() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-baseline">
-                    <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">Description</label>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-bold text-neutral-300 uppercase tracking-wide">Description</label>
+                      <button
+                        type="button"
+                        onClick={startListening}
+                        className={`px-2.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 border ${
+                          isListening 
+                          ? "bg-red-500/10 text-red-500 border-red-500/50 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
+                          : "bg-neutral-800 border-transparent text-neutral-400 hover:text-white hover:bg-neutral-700"
+                        }`}
+                        title="Use Voice Typing"
+                      >
+                        {isListening ? (
+                          <>
+                            <Mic className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest mt-0.5">Listening...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest mt-0.5">Voice Type</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <span className={`text-xs font-bold ${description.length < 50 ? "text-red-400" : "text-[#3ce36a]"}`}>
                       {description.length}/50 min chars
                     </span>
