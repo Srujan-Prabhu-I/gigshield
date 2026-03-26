@@ -138,11 +138,179 @@ export default function ImpactPage() {
   const taxGainCrore = ((totalAnnualGain * 0.12) / 10000000).toFixed(2)
 
   const createPDF = () => {
-    const doc = new jsPDF()
-    doc.text("GigShield Intelligence Report", 14, 20)
-    doc.text(`Total reports: ${totalReports}`, 14, 30)
-    doc.save("gigshield-intelligence-report.pdf")
-  }
+    const doc = new jsPDF();
+    const primaryColor = [63, 229, 108]; // #3fe56c
+    const secondaryColor = [28, 27, 27]; // #1c1b1b
+    const textColor = [20, 20, 20];
+    const lightTextColor = [100, 100, 100];
+
+    // --- PAGE 1: COVER PAGE ---
+    // Background accent
+    doc.setFillColor(245, 245, 245);
+    doc.rect(0, 0, 210, 297, "F");
+    
+    // Header Strip
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, 210, 40, "F");
+    
+    // Logo / Brand
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.text("GigShield", 20, 25);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text(".", 62, 25);
+    
+    // Title
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(32);
+    doc.text("Gig Economy", 20, 80);
+    doc.text("Exploitation &", 20, 95);
+    doc.text("Impact Report", 20, 110);
+    
+    // Decorative line
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(2);
+    doc.line(20, 120, 60, 120);
+    
+    // Scope Info
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 140);
+    doc.text(`Scope: Aggregate Worker Reports (N=${totalReports})`, 20, 148);
+    doc.text("Territory: India (Regional Data Samples)", 20, 156);
+    
+    // Footer Credit
+    doc.setFontSize(10);
+    doc.text("CONFIDENTIAL | FOR POLICY & ADVOCACY USE ONLY", 20, 280);
+
+    // --- PAGE 2: EXECUTIVE SUMMARY ---
+    doc.addPage();
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, 210, 15, "F");
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("1. Executive Summary", 14, 30);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    const summaryText = "This report details systemic wage underpayment and algorithmic exploitation within major gig commerce platforms. Based on verified worker-submitted logs, we have detected consistent deviations from standard fair-pay benchmarks.";
+    doc.text(doc.splitTextToSize(summaryText, 180), 14, 40);
+
+    // Key Metrics Box
+    doc.setFillColor(240, 240, 240);
+    doc.rect(14, 55, 182, 45, "F");
+    doc.setDrawColor(220, 220, 220);
+    doc.rect(14, 55, 182, 45, "S");
+    
+    doc.setFontSize(10);
+    doc.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
+    doc.text("TOTAL UNDERPAID WAGES DETECTED", 20, 65);
+    doc.text("TOTAL WORKER REPORTS", 110, 65);
+    doc.text("CRITICAL INSIGHT", 20, 85);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`INR ${totalDeficit.toLocaleString()}`, 20, 75);
+    doc.text(`${totalReports} entries`, 110, 75);
+    doc.setFontSize(11);
+    doc.text(insights, 20, 93);
+
+    // Platform Audit Table
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("2. Platform Compliance Audit", 14, 120);
+    
+    let y = 135;
+    // Table Header
+    doc.setFillColor(0, 0, 0);
+    doc.rect(14, y, 182, 10, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text("PLATFORM", 18, y + 6);
+    doc.text("REPORTS", 60, y + 6);
+    doc.text("AVG DEFICIT", 90, y + 6);
+    doc.text("COMPLIANCE STATE", 130, y + 6);
+    
+    y += 10;
+    groupByPlatform.forEach((p, i) => {
+      doc.setTextColor(0, 0, 0);
+      if (i % 2 === 0) {
+        doc.setFillColor(248, 248, 248);
+        doc.rect(14, y, 182, 10, "F");
+      }
+      doc.text(p.platform, 18, y + 6);
+      doc.text(p.workerCount.toString(), 60, y + 6);
+      doc.text(`INR ${p.avgDeficit.toFixed(0)}`, 90, y + 6);
+      
+      if (p.compliance === "Compliant") doc.setTextColor(0, 150, 0);
+      else if (p.compliance === "Partially") doc.setTextColor(150, 150, 0);
+      else doc.setTextColor(200, 0, 0);
+      
+      doc.text(p.compliance, 130, y + 6);
+      y += 10;
+    });
+
+    // --- PAGE 3: ECONOMIC IMPACT ---
+    doc.addPage();
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, 210, 15, "F");
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("3. Economic Impact Projection", 14, 30);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    const econText = `If the hourly minimum wage is standardized at INR ${targetWage}/hr (Telangana Gig Worker Act baseline), the following economic shifts are projected locally:`;
+    doc.text(doc.splitTextToSize(econText, 180), 14, 40);
+
+    // Impact Grid
+    doc.rect(14, 55, 50, 30, "S");
+    doc.text("Monthly Increase / Worker", 18, 65, { maxWidth: 40 });
+    doc.setFont("helvetica", "bold");
+    doc.text(`INR ${additionalMonthlyIncome.toFixed(0)}`, 18, 78);
+    
+    doc.setFont("helvetica", "normal");
+    doc.rect(74, 55, 50, 30, "S");
+    doc.text("Total Annual GDP Gain", 78, 65, { maxWidth: 40 });
+    doc.setFont("helvetica", "bold");
+    doc.text(`INR ${totalAnnualGainCrore} Cr`, 78, 78);
+    
+    doc.setFont("helvetica", "normal");
+    doc.rect(134, 55, 50, 30, "S");
+    doc.text("Estimated Tax Revenue", 138, 65, { maxWidth: 40 });
+    doc.setFont("helvetica", "bold");
+    doc.text(`INR ${taxGainCrore} Cr`, 138, 78);
+
+    // Policy Recommendations
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("4. Policy Recommendations", 14, 110);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    const recommendations = [
+      "• Algorithmic Transparency: Implement mandatory audits for payout logic.",
+      "• Minimum Earnings Guarantee: Standardize a base rate of INR 93/hr + fuel overhead.",
+      "• Social Security Pool: Platforms to contribute 2% of revenue to state-managed insurance.",
+      "• Grievance Redressal: Independent verification of worker deactivations and disputes."
+    ];
+    
+    let recY = 120;
+    recommendations.forEach(rec => {
+      doc.text(doc.splitTextToSize(rec, 170), 20, recY);
+      recY += 12;
+    });
+
+    doc.save(`GigShield_Intelligence_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
 
   const copySummary = () => {
     const text = `Total reports: ${totalReports}\nTotal underpaid deficit: ₹${totalDeficit.toFixed(0)}\nMost exploitative platform: ${mostExploitative}`
