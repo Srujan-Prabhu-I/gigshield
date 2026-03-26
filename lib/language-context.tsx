@@ -11,8 +11,10 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState("en")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const saved = localStorage.getItem("gigshield-lang")
     if (saved) setLanguageState(saved)
   }, [])
@@ -20,6 +22,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (lang: string) => {
     setLanguageState(lang)
     localStorage.setItem("gigshield-lang", lang)
+  }
+
+  if (!mounted) {
+    return (
+      <LanguageContext.Provider value={{ language: "en", setLanguage }}>
+        {children}
+      </LanguageContext.Provider>
+    )
   }
 
   return (

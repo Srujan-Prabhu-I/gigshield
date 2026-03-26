@@ -3,12 +3,22 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("[api/submit] Starting request processing")
+    
+    // Log environment variables (without exposing sensitive data)
+    console.log("[api/submit] Environment check:", {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseUrlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + "..."
+    })
+
     const body = await req.json()
+    console.log("[api/submit] Request body received:", Object.keys(body))
 
     // Generate a fallback device id (client normally provides it via getDeviceId()).
     const deviceId =
@@ -64,30 +74,30 @@ export async function POST(req: NextRequest) {
     }
 
     // 2) Insert into earnings_logs for the new production feature set.
-    console.log("[api/submit] earnings_logs insert payload:", {
-      platform: body.platform,
-      city: body.city,
-      orders_per_day: Number(body.orders_day ?? 0),
-      hours_per_day: Number(body.hours_day ?? 0),
-      monthly_earnings: Number(body.monthly_pay ?? 0),
-      calculated_deficit: Number(body.monthlyDeficit ?? 0),
-      device_id: deviceId,
-      user_id: null,
-    })
+    const payload = [
+      {
+        platform: body.platform,
+        city: body.city,
+        orders_per_day: Number(body.orders_day ?? 0),
+        hours_per_day: Number(body.hours_day ?? 0),
+        monthly_earnings: Number(body.monthly_pay ?? 0),
+        calculated_deficit: Number(body.monthlyDeficit ?? 0),
+        device_id: deviceId,
+        user_id: null,
+      },
+    ];
+
+    console.log("INSERT PAYLOAD:", payload);
+
     const { data: earningsLogsData, error: earningsLogsError } = await supabaseAdmin
       .from("earnings_logs")
-      .insert([
-        {
-          platform: body.platform,
-          city: body.city,
-          orders_per_day: Number(body.orders_day ?? 0),
-          hours_per_day: Number(body.hours_day ?? 0),
-          monthly_earnings: Number(body.monthly_pay ?? 0),
-          calculated_deficit: Number(body.monthlyDeficit ?? 0),
-          device_id: deviceId,
-          user_id: null,
-        },
-      ])
+      .insert(payload);
+
+    console.log("INSERT RESULT:", { data: earningsLogsData, error: earningsLogsError });
+
+    if (earningsLogsError) {
+      console.error("INSERT ERROR:", earningsLogsError);
+    }
 
     if (earningsLogsError) {
       console.error(

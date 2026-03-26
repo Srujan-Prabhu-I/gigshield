@@ -27,22 +27,17 @@ function uuidv4(): string {
 // getDeviceId:
 // - Reads/writes `localStorage`
 // - Generates a UUID if missing
-// - Safe to import in SSR; returns '' when called on the server
-export function getDeviceId(): string {
-  if (typeof window === "undefined") {
-    return ""
+// - Safe to import in SSR; returns null when called on the server
+export function getDeviceId(): string | null {
+  if (typeof window === "undefined") return null;
+
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+
+  if (!id) {
+    id = uuidv4();
+    localStorage.setItem(DEVICE_ID_KEY, id);
   }
 
-  try {
-    const existing = window.localStorage.getItem(DEVICE_ID_KEY)
-    if (existing) return existing
-
-    const id = uuidv4()
-    window.localStorage.setItem(DEVICE_ID_KEY, id)
-    return id
-  } catch {
-    // If localStorage is blocked/unavailable, still return something usable.
-    return uuidv4()
-  }
+  return id;
 }
 
