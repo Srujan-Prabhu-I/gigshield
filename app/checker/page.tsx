@@ -108,8 +108,8 @@ export default function CheckerPage() {
   const getShareText = () => {
     if (!result) return ""
     return result.isUnderpaid 
-      ? `🚨 Gig Worker Alert: I checked my pay for ${platform} in ${city}. The legal minimum wage in Telangana is ₹${result.fairMinimumPerHour}/hr, but I am making ₹${result.actualPayPerHour}/hr. I am being underpaid by ₹${result.monthlyDeficit}/month. Check your pay at GigShield!`
-      : `✅ Good News: I checked my pay for ${platform} in ${city}. I am making ₹${result.actualPayPerHour}/hr which meets the Telangana legal minimum of ₹${result.fairMinimumPerHour}/hr. Check your pay at GigShield!`
+      ? `🚨 *GigShield Wage Alert* 🚨\n\nI just checked my real net-earnings for *${platform}* in ${city}.\n\n⚖️ Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n📉 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n💸 Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThe apps are hiding our petrol & bike maintenance costs.\n\n🔥 Check if you are being underpaid right now:\n🔗 https://gigshield-six.vercel.app/`
+      : `✅ *GigShield Verified* ✅\n\nI just checked my earnings for *${platform}* in ${city}.\n\n⚖️ Telangana Min Wage: *₹${result.fairMinimumPerHour}/hr*\n📈 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy algorithmic pay currently meets the legal standard!\n\n🔥 Check your own pay right now:\n🔗 https://gigshield-six.vercel.app/`
   }
 
   const handleShare = () => {
@@ -386,7 +386,7 @@ export default function CheckerPage() {
                     <Skeleton className="h-4 w-4/6 bg-neutral-800 rounded-md" />
                   </div>
                 ) : (
-                  <div className="prose prose-invert prose-p:text-neutral-300 prose-p:font-medium prose-p:leading-relaxed max-w-none">
+                  <div className="text-neutral-200 font-medium leading-relaxed max-w-none text-base">
                     <p className="whitespace-pre-wrap">
                       {rightsText || "Rights information unavailable."}
                     </p>
@@ -407,7 +407,7 @@ export default function CheckerPage() {
                   }`}
                 >
                   {isSubmittingReport ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-                  {reportSubmitted ? "Report Added to Index ✓" : "Submit Anonymous Report"}
+                  {reportSubmitted ? "Report Added to Index ✓" : "Submit Report"}
                 </Button>
               </CardFooter>
             </Card>
