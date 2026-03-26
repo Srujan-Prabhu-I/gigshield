@@ -45,12 +45,21 @@ export async function POST(req: NextRequest) {
     score = Math.max(0, Math.min(100, score))
     const status = score > 75 ? "Compliant" : score >= 50 ? "Partially Compliant" : "Non-Compliant"
 
+    // Calculate estimated penalty for non-compliant platforms
+    let estimatedPenalty = undefined
+    if (score < 50) {
+      // Simple penalty calculation: deficit * 100 (as requested)
+      const deficit = 100 - score
+      estimatedPenalty = deficit * 100
+    }
+
     return NextResponse.json({
       score,
       status,
       violations,
       actionItems: actionItems.slice(0, 3),
       verified: score > 75,
+      estimatedPenalty,
     })
   } catch (error) {
     console.error(error)

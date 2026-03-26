@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShieldCheck, ShieldAlert, Sparkles } from "lucide-react"
+import { ShieldCheck, ShieldAlert, Sparkles, Download, Award } from "lucide-react"
 
 type AuditResult = {
   score: number
@@ -14,6 +14,7 @@ type AuditResult = {
   violations: string[]
   actionItems: string[]
   verified: boolean
+  estimatedPenalty?: number
 }
 
 export default function PlatformPortalPage() {
@@ -29,6 +30,7 @@ export default function PlatformPortalPage() {
   const [avgDeficitByPlatform, setAvgDeficitByPlatform] = useState<Record<string, number>>({})
   const [platformInsight, setPlatformInsight] = useState("")
   const [loadingLogs, setLoadingLogs] = useState(true)
+  const [showCertification, setShowCertification] = useState(false)
 
   const canSubmit = platformName.trim().length > 0 && weeklyHours > 0
 
@@ -113,6 +115,29 @@ export default function PlatformPortalPage() {
       if (!res.ok) throw new Error(data.error || "Failed platform audit")
 
       setAuditResult(data)
+
+      // Persistent Certification for High Scores
+      if (data.score >= 75) {
+        try {
+          const { error: certError } = await supabase
+            .from("platform_certifications")
+            .insert([{
+              platform_name: platformName,
+              score: data.score,
+              status: "Certified",
+              created_at: new Date().toISOString()
+            }])
+          
+          if (certError) {
+            console.error("Failed to persist certification:", certError)
+            // Silently continue if table doesn't exist yet
+          } else {
+            console.log("Certification persisted successfully")
+          }
+        } catch (e) {
+          console.error("Certification persistence error:", e)
+        }
+      }
     } catch (error: any) {
       console.error("Platform audit failed:", error)
     } finally {
@@ -120,7 +145,59 @@ export default function PlatformPortalPage() {
     }
   }
 
-  const badgeDate = useMemo(() => new Date().toDateString(), [])
+  const downloadBadge = () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 400
+    canvas.height = 200
+    const ctx = canvas.getContext('2d')
+    
+    if (ctx) {
+      // Background
+      ctx.fillStyle = '#1c1b1b'
+      ctx.fillRect(0, 0, 400, 200)
+      
+      // Border glow
+      ctx.strokeStyle = '#3fe56c'
+      ctx.lineWidth = 3
+      ctx.strokeRect(5, 5, 390, 190)
+      
+      // Shield icon
+      ctx.fillStyle = '#3fe56c'
+      ctx.font = '30px Arial'
+      ctx.fillText('🛡️', 20, 40)
+      
+      // Title
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 18px Arial'
+      ctx.fillText('GigShield Certified Fair Employer', 70, 35)
+      
+      // Platform name
+      ctx.fillStyle = '#3fe56c'
+      ctx.font = 'bold 24px Arial'
+      ctx.fillText(platformName, 20, 80)
+      
+      // Score
+      ctx.fillStyle = '#ffffff'
+      ctx.font = '20px Arial'
+      ctx.fillText(`Score: ${auditResult?.score}/100`, 20, 110)
+      
+      // Date
+      ctx.fillStyle = '#888'
+      ctx.font = '14px Arial'
+      ctx.fillText(`Verified: ${new Date().toLocaleDateString()}`, 20, 140)
+      
+      // Status
+      ctx.fillStyle = '#22c55e'
+      ctx.font = 'bold 16px Arial'
+      ctx.fillText('✓ CERTIFIED', 20, 170)
+      
+      // Download
+      const link = document.createElement('a')
+      link.download = `${platformName}-gigshield-certification.png`
+      link.href = canvas.toDataURL()
+      link.click()
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white py-8 px-4 sm:px-6 lg:px-10">
@@ -132,10 +209,10 @@ export default function PlatformPortalPage() {
 
         <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
           <CardHeader className="border-b border-neutral-800 p-6">
-            <CardTitle className="text-xl font-bold text-white">Self Audit Tool</CardTitle>
+            <CardTitle className="text-xl font-bold text-white">Compliance Self-Audit Dashboard</CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="space-y-1 text-sm text-neutral-300">
                   Platform name
@@ -234,68 +311,116 @@ export default function PlatformPortalPage() {
         ) : null}
 
         {auditResult ? (
-          <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
-            <CardHeader className="border-b border-neutral-800 p-6">
-              <CardTitle className="text-xl font-bold text-white">Audit Outcome</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm text-neutral-200">Score: {auditResult.score}/100</p>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-white">Status:</span>
-                  <span className={
-                    auditResult.score > 75
-                      ? "text-[#22c55e]"
-                      : auditResult.score >= 40
-                      ? "text-[#facc15]"
-                      : "text-[#ef4444]"
+          <>
+            {/* Certification Badge for High Scores */}
+            {auditResult.score >= 75 && (
+              <Card className="border-2 border-[#3fe56c] bg-[#1c1b1b] shadow-lg shadow-[#3fe56c]/20">
+                <CardContent className="p-8 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-[#3fe56c]/20 flex items-center justify-center mx-auto">
+                    <Award className="w-8 h-8 text-[#3fe56c]" />
+                  </div>
+                  <h2 className="text-2xl font-black text-white">GigShield Certified Fair Employer</h2>
+                  <div className="space-y-2">
+                    <p className="text-lg text-[#3fe56c] font-bold">{platformName}</p>
+                    <p className="text-3xl font-black text-white">{auditResult.score}/100</p>
+                    <p className="text-sm text-neutral-300">Verified: {new Date().toLocaleDateString()}</p>
+                    <Badge className="bg-[#3fe56c] text-black font-bold">Certified</Badge>
+                  </div>
+                  <Button 
+                    onClick={downloadBadge}
+                    className="bg-[#3fe56c] hover:bg-[#37cf61] text-black font-bold"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Badge
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Enhanced Audit Results */}
+            <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
+              <CardHeader className="border-b border-neutral-800 p-6">
+                <CardTitle className="text-xl font-bold text-white">Audit Results</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Score Display */}
+                <div className="text-center space-y-2">
+                  <div className={`text-5xl font-black ${
+                    auditResult.score >= 80 ? 'text-[#22c55e]' :
+                    auditResult.score >= 50 ? 'text-[#facc15]' : 'text-[#ef4444]'
+                  }`}>
+                    {auditResult.score}/100
+                  </div>
+                  <Badge className={
+                    auditResult.score >= 80 ? 'bg-[#22c55e] text-white' :
+                    auditResult.score >= 50 ? 'bg-[#facc15] text-black' : 'bg-[#ef4444] text-white'
                   }>
-                    {auditResult.score > 75 ? "🟢 Compliant" : auditResult.score >= 40 ? "🟡 Partially Compliant" : "🔴 Non-Compliant"}
-                  </span>
+                    {auditResult.score >= 80 ? '✓ Compliant' :
+                     auditResult.score >= 50 ? '⚠️ Partially Compliant' : '✗ Non-Compliant'}
+                  </Badge>
                 </div>
-              </div>
 
-              <div>
-                <p className="font-semibold mb-2 text-white">Real-time platform insight</p>
-                <p className="text-sm text-neutral-200">{platformInsight}</p>
-              </div>
+                {/* Penalty Exposure for Non-Compliant */}
+                {auditResult.score < 50 && auditResult.estimatedPenalty && (
+                  <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-4">
+                    <h3 className="text-lg font-bold text-red-400 mb-2">Estimated Penalty Exposure</h3>
+                    <p className="text-2xl font-bold text-white">₹{auditResult.estimatedPenalty.toLocaleString()}/month</p>
+                    <p className="text-sm text-neutral-300 mt-2">
+                      For awareness only. Not a legal enforcement.
+                    </p>
+                  </div>
+                )}
 
-              <div>
-                <p className="font-semibold mb-2 text-white">Violations</p>
-                <ul className="list-disc ml-5 text-sm text-neutral-200">
-                  {auditResult.violations.map((violation, idx) => {
-                    const clause = violation.includes("accident insurance")
-                      ? "Telangana Act Sec 12"
-                      : violation.includes("grievance")
-                      ? "Telangana Act Sec 8"
-                      : violation.includes("minimum earnings")
-                      ? "Telangana Act Sec 14"
-                      : "Telangana Act Sec 20"
-                    return (
-                      <li key={idx}>
-                        ❌ {violation} → Violation: {clause}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
+                {/* Violations */}
+                {auditResult.violations.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-3">Violations Found</h3>
+                    <div className="space-y-2">
+                      {auditResult.violations.map((violation, idx) => {
+                        const clause = violation.includes("accident insurance")
+                          ? "Telangana Act Sec 12"
+                          : violation.includes("grievance")
+                          ? "Telangana Act Sec 8"
+                          : violation.includes("minimum earnings")
+                          ? "Telangana Act Sec 14"
+                          : "Telangana Act Sec 20"
+                        return (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <span className="text-red-400">✗</span>
+                            <div>
+                              <p className="text-white font-semibold">{violation}</p>
+                              <p className="text-sm text-neutral-300">Violation: {clause}</p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
-              <div>
-                <p className="font-semibold mb-2 text-white">Fix Suggestions</p>
-                <ol className="list-decimal ml-5 text-sm text-neutral-200">
-                  {auditResult.actionItems.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ol>
-              </div>
+                {/* Recommended Fixes */}
+                {auditResult.actionItems.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-3">Recommended Fixes</h3>
+                    <div className="space-y-2">
+                      {auditResult.actionItems.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <span className="text-green-400">✓</span>
+                          <p className="text-white">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-              {auditResult.verified && (
-                <div className="rounded-lg border border-[#22c55e] bg-[#163e1e] p-3 mt-2">
-                  <p className="text-sm font-bold text-[#22c55e]">🏆 GigShield Verified Fair Employer</p>
+                {/* Platform Insight */}
+                <div className="border border-neutral-700 bg-neutral-800/50 rounded-lg p-4">
+                  <h3 className="text-lg font-bold text-white mb-2">Real-time Platform Insight</h3>
+                  <p className="text-neutral-200">{platformInsight}</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </>
         ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

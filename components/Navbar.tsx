@@ -14,6 +14,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "For Platforms", href: "/platform-portal" },
+    { name: "Compare Platforms", href: "/compare" },
     { name: "Check My Pay", href: "/checker" },
     { name: "Worker Rights", href: "/worker-rights" },
     { name: "Impact", href: "/impact" },

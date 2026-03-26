@@ -444,7 +444,7 @@ export default function ImpactPage() {
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button onClick={createPDF} className="bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black">Download Full Intelligence Report</Button>
+              <Button onClick={createPDF} className="bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">Download Full Intelligence Report</Button>
               <Button onClick={copySummary} className="border border-neutral-700">Share with Policy Makers</Button>
             </div>
           </>

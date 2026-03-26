@@ -211,13 +211,13 @@ export default function WorkerRightsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link href="/checker" className="block">
-            <Button className="w-full py-3 bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black">Check My Pay</Button>
+            <Button className="w-full py-3 bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">Check My Pay</Button>
           </Link>
           <Link href="/grievance" className="block">
-            <Button className="w-full py-3 bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black">File Complaint</Button>
+            <Button className="w-full py-3 bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">File Complaint</Button>
           </Link>
           <Link href="/leaderboard" className="block">
-            <Button className="w-full py-3 bg-gradient-to-br from-[#3fe56c] to-[#00c853] text-black">See Exploitation Index</Button>
+            <Button className="w-full py-3 bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">See Exploitation Index</Button>
           </Link>
         </div>
       </div>
