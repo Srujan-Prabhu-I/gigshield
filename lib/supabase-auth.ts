@@ -64,12 +64,14 @@ export function onAuthStateChanged(
 
 export async function upsertProfileForUser(user: User) {
   const supabase = getSupabaseAuthClient()
-  const { data, error } = await supabase.from("profiles").upsert([
-    {
-      id: user.id,
-      email: user.email ?? null,
-    }
-  ])
+  const { data, error } = await (supabase as any)
+    .from("profiles")
+    .upsert([
+      {
+        id: user.id,
+        email: user.email ?? null,
+      }
+    ])
 
   console.log("UPSERT PROFILE RESULT:", { data, error })
 
