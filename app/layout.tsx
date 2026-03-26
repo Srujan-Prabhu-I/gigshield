@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Noto_Sans_Telugu, Noto_Sans_Devanagari } from "next/
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta httpEquiv="Cache-Control" content="no-store" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${notoSansTelugu.variable} ${notoSansDevanagari.variable} antialiased min-h-screen flex flex-col bg-[#0e0e0e]`}>
         <AuthProvider>
           <LanguageProvider>

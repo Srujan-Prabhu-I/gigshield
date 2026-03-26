@@ -10,7 +10,7 @@ export default function Navbar() {
   const { user, openAuthModal, signOut, mounted } = useAuth()
 
   // Deployment tracer
-  console.log("GigShield Version: v2");
+  console.log("GigShield Version: v3.0.0");
 
   const navLinks = [
     { name: "For Platforms", href: "/platform-portal" },

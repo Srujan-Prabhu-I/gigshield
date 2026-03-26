@@ -80,7 +80,8 @@ export default function CheckerPage() {
       const res = await fetch("/api/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
+        cache: "no-store",
       })
 
       const data = await res.json()
@@ -135,7 +136,8 @@ export default function CheckerPage() {
           platform,
           monthlyDeficit: calculation.deficit,
           isUnderpaid: calculation.deficit > 0,
-        })
+        }),
+        cache: "no-store",
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to fetch rights")
@@ -190,7 +192,8 @@ export default function CheckerPage() {
           monthlyDeficit: result.deficit,
           fairMinimumPerHour: 93,
           device_id: deviceId,
-        })
+        }),
+        cache: "no-store",
       })
       
       if (!res.ok) throw new Error("Failed to submit report")
