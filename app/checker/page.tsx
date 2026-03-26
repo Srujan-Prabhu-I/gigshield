@@ -109,8 +109,8 @@ export default function CheckerPage() {
     if (!result) return ""
     const url = "https://gigshield-six.vercel.app"
     return result.isUnderpaid
-      ? `🚨 *[GigShield Wage Alert]* 🚨\n\nI checked my real earnings for *${platform}* in ${city}.\n\n⚖️ Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n📉 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n🛑 Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThis includes petrol and bike maintenance deduction.\n\nCheck if YOU are being underpaid:\n${url}`
-      : `✅ *[GigShield Verified]* ✅\n\nI checked my earnings for *${platform}* in ${city}.\n\n⚖️ Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n💰 My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy pay meets the Telangana legal standard!\n\nCheck your own pay:\n${url}`
+      ? `*[GigShield Wage Alert]*\n\nI checked my real earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n- Stolen Wages: *₹${result.monthlyDeficit}/month*\n\nThis includes petrol and bike maintenance deduction.\n\nCheck if YOU are being underpaid:\n${url}`
+      : `*[GigShield Verified]*\n\nI checked my earnings for *${platform}* in ${city}.\n\n- Legal Min Wage: *₹${result.fairMinimumPerHour}/hr*\n- My Actual Pay: *₹${result.actualPayPerHour}/hr*\n\nMy pay meets the Telangana legal standard!\n\nCheck your own pay:\n${url}`
   }
 
   const handleShare = () => {
