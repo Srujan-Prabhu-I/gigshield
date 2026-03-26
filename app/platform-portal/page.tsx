@@ -132,7 +132,7 @@ export default function PlatformPortalPage() {
 
         <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
           <CardHeader className="border-b border-neutral-800 p-6">
-            <CardTitle className="text-xl font-bold">Self Audit Tool</CardTitle>
+            <CardTitle className="text-xl font-bold text-white">Self Audit Tool</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -227,13 +227,13 @@ export default function PlatformPortalPage() {
         {auditResult ? (
           <Card className="border border-neutral-800 bg-[#1c1b1b] shadow-lg">
             <CardHeader className="border-b border-neutral-800 p-6">
-              <CardTitle className="text-xl font-bold">Audit Outcome</CardTitle>
+              <CardTitle className="text-xl font-bold text-white">Audit Outcome</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-neutral-300">Score: {auditResult.score}/100</p>
+                <p className="text-sm text-neutral-200">Score: {auditResult.score}/100</p>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold">Status:</span>
+                  <span className="font-bold text-white">Status:</span>
                   <span className={
                     auditResult.score > 75
                       ? "text-[#22c55e]"
@@ -247,13 +247,13 @@ export default function PlatformPortalPage() {
               </div>
 
               <div>
-                <p className="font-semibold mb-2">Real-time platform insight</p>
-                <p className="text-sm text-neutral-300">{platformInsight}</p>
+                <p className="font-semibold mb-2 text-white">Real-time platform insight</p>
+                <p className="text-sm text-neutral-200">{platformInsight}</p>
               </div>
 
               <div>
-                <p className="font-semibold mb-2">Violations</p>
-                <ul className="list-disc ml-5 text-sm text-neutral-300">
+                <p className="font-semibold mb-2 text-white">Violations</p>
+                <ul className="list-disc ml-5 text-sm text-neutral-200">
                   {auditResult.violations.map((violation, idx) => {
                     const clause = violation.includes("accident insurance")
                       ? "Telangana Act Sec 12"
@@ -272,8 +272,8 @@ export default function PlatformPortalPage() {
               </div>
 
               <div>
-                <p className="font-semibold mb-2">Fix Suggestions</p>
-                <ol className="list-decimal ml-5 text-sm text-neutral-300">
+                <p className="font-semibold mb-2 text-white">Fix Suggestions</p>
+                <ol className="list-decimal ml-5 text-sm text-neutral-200">
                   {auditResult.actionItems.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
@@ -313,7 +313,7 @@ export default function PlatformPortalPage() {
                   <card.icon className="w-5 h-5 text-[#3fe56c]" />
                   <h3 className="font-bold text-white">{card.title}</h3>
                 </div>
-                <p className="text-sm text-neutral-300">{card.desc}</p>
+                <p className="text-sm text-neutral-200">{card.desc}</p>
               </CardContent>
             </Card>
           ))}

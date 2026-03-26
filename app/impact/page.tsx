@@ -166,42 +166,42 @@ export default function ImpactPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-[#1c1b1b] border border-neutral-800">
                 <CardContent>
-                  <CardTitle className="text-sm text-neutral-400">Total Reports</CardTitle>
-                  <p className="text-3xl font-bold">{totalReports}</p>
+                  <CardTitle className="text-sm text-neutral-300">Total Reports</CardTitle>
+                  <p className="text-3xl font-bold text-white">{totalReports}</p>
                 </CardContent>
               </Card>
               <Card className="bg-[#1c1b1b] border border-neutral-800">
                 <CardContent>
-                  <CardTitle className="text-sm text-neutral-400">Total Underpaid Wages</CardTitle>
-                  <p className="text-3xl font-bold">₹{totalDeficit.toFixed(0)}</p>
+                  <CardTitle className="text-sm text-neutral-300">Total Underpaid Wages</CardTitle>
+                  <p className="text-3xl font-bold text-white">₹{totalDeficit.toFixed(0)}</p>
                 </CardContent>
               </Card>
               <Card className="bg-[#1c1b1b] border border-neutral-800">
                 <CardContent>
-                  <CardTitle className="text-sm text-neutral-400">Most Exploitative</CardTitle>
-                  <p className="text-2xl font-bold">{mostExploitative}</p>
+                  <CardTitle className="text-sm text-neutral-300">Most Exploitative</CardTitle>
+                  <p className="text-2xl font-bold text-white">{mostExploitative}</p>
                 </CardContent>
               </Card>
               <Card className="bg-[#1c1b1b] border border-neutral-800">
                 <CardContent>
-                  <CardTitle className="text-sm text-neutral-400">Cities Covered</CardTitle>
-                  <p className="text-2xl font-bold">{new Set(logs.map((item) => (item as any).city)).size || 0}</p>
+                  <CardTitle className="text-sm text-neutral-300">Cities Covered</CardTitle>
+                  <p className="text-2xl font-bold text-white">{new Set(logs.map((item) => (item as any).city)).size || 0}</p>
                 </CardContent>
               </Card>
             </div>
 
             <div className="bg-[#1c1b1b] border border-neutral-800 rounded-lg p-4">
-              <p className="text-sm text-neutral-300 font-semibold">Key Insight</p>
+              <p className="text-sm text-neutral-200 font-semibold">Key Insight</p>
               <p className="text-white mt-1">{insights}</p>
             </div>
 
             <Card className="bg-[#1c1b1b] border border-neutral-800">
               <CardHeader className="p-5">
-                <CardTitle className="text-xl font-bold">What if minimum wage increases?</CardTitle>
+                <CardTitle className="text-xl font-bold text-white">What if minimum wage increases?</CardTitle>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <span>Set target wage: ₹{targetWage}</span>
+                  <span className="text-white">Set target wage: ₹{targetWage}</span>
                   <input
                     type="range"
                     min={93}
@@ -212,16 +212,16 @@ export default function ImpactPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-400">Additional monthly income / worker</p>
-                    <p className="text-xl font-bold">₹{additionalMonthlyIncome.toFixed(0)}</p>
+                    <p className="text-xs text-neutral-300">Additional monthly income / worker</p>
+                    <p className="text-xl font-bold text-white">₹{additionalMonthlyIncome.toFixed(0)}</p>
                   </div>
                   <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-400">Total annual increase</p>
-                    <p className="text-xl font-bold">₹{totalAnnualGainCrore} Cr</p>
+                    <p className="text-xs text-neutral-300">Total annual increase</p>
+                    <p className="text-xl font-bold text-white">₹{totalAnnualGainCrore} Cr</p>
                   </div>
                   <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-400">Estimated tax revenue</p>
-                    <p className="text-xl font-bold">₹{taxGainCrore} Cr</p>
+                    <p className="text-xs text-neutral-300">Estimated tax revenue</p>
+                    <p className="text-xl font-bold text-white">₹{taxGainCrore} Cr</p>
                   </div>
                 </div>
               </CardContent>
@@ -229,11 +229,11 @@ export default function ImpactPage() {
 
             <Card className="bg-[#1c1b1b] border border-neutral-800">
               <CardHeader className="p-5">
-                <CardTitle className="text-xl font-bold">Platform Compliance Summary</CardTitle>
+                <CardTitle className="text-xl font-bold text-white">Platform Compliance Summary</CardTitle>
               </CardHeader>
               <CardContent className="p-5 overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="text-neutral-400 border-b border-neutral-700">
+                  <thead className="text-neutral-300 border-b border-neutral-700">
                     <tr>
                       <th className="py-2">Platform</th>
                       <th className="py-2">Worker count</th>

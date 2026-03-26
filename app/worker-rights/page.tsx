@@ -140,7 +140,7 @@ export default function WorkerRightsPage() {
         </div>
 
         <Card className="border border-neutral-800 bg-[#1c1b1b] p-4">
-          <p className="text-sm text-neutral-300">{rightsInsightMessage || "No recent entries yet."}</p>
+          <p className="text-sm text-neutral-200">{rightsInsightMessage || "No recent entries yet."}</p>
           {cityBelowMinPct !== null && (
             <p className="text-sm text-[#facc15]">
               {cityBelowMinPct.toFixed(0)}% workers in your city earn below minimum wage
@@ -160,8 +160,8 @@ export default function WorkerRightsPage() {
                 <div className="flex items-start gap-3">
                   <span>{iconMap[right.key]}</span>
                   <div>
-                    <h2 className="font-bold text-lg">{right.title}</h2>
-                    <p className="text-neutral-300 text-sm mt-1">{right.text}</p>
+                    <h2 className="font-bold text-lg text-white">{right.title}</h2>
+                    <p className="text-neutral-200 text-sm mt-1">{right.text}</p>
                   </div>
                 </div>
                 <Button
@@ -176,8 +176,8 @@ export default function WorkerRightsPage() {
         </div>
 
         <div className="bg-[#1c1b1b] border border-neutral-800 p-4 rounded-lg">
-          <p className="font-semibold mb-2">Detailed Rights Explanation</p>
-          <p className="text-sm text-neutral-300">{loading ? "Loading..." : details || "Click a card to load details."}</p>
+          <p className="font-semibold mb-2 text-white">Detailed Rights Explanation</p>
+          <p className="text-sm text-neutral-200">{loading ? "Loading..." : details || "Click a card to load details."}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

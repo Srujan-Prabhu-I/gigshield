@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import LanguageToggle from "./LanguageToggle"
 import { useAuth } from "@/lib/auth-context"
 
 export default function Navbar() {
@@ -67,7 +66,6 @@ export default function Navbar() {
                 )}
               </>
             )}
-            <LanguageToggle />
           </div>
         </div>
         
@@ -81,7 +79,6 @@ export default function Navbar() {
               Verify
             </button>
           )}
-          <LanguageToggle />
         </div>
       </div>
     </nav>
