@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 
 export default function VerifyProtectionCTA() {
-  const { user, mounted } = useAuth()
+  const { user, mounted, openAuthModal } = useAuth()
 
   if (!mounted) return null
 
