@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    const { data } = onAuthStateChanged((_event, session) => {
+    const { data } = onAuthStateChanged((_event: any, session: any) => {
       if (!mounted) return
       setUser(session?.user ?? null)
       setLoading(false)

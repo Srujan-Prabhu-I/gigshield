@@ -56,7 +56,7 @@ export async function getCurrentUser() {
 }
 
 export function onAuthStateChanged(
-  callback: Parameters<ReturnType<typeof getSupabaseAuthClient>["auth"]["onAuthStateChange"]>[0]
+  callback: (event: any, session: any) => void
 ) {
   return getSupabaseAuthClient().auth.onAuthStateChange(callback)
 }
