@@ -14,7 +14,7 @@ const groq = new Groq({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { platform, city, issue_type, description, language } = body
+    const { platform, city, issue_type, description, language, userName, address, phone } = body
 
     if (!platform || !city || !issue_type || !description) {
       return NextResponse.json(
@@ -37,7 +37,15 @@ export async function POST(req: NextRequest) {
         {
           role: "system",
           content:
-            `You are a legal assistant helping Indian gig workers file formal complaints. Generate a formal complaint letter addressed to: The Labour Commissioner, Government of Telangana. Reference Telangana Gig and Platform Workers Act 2025 (sections 12, 15, 18). Demand investigation and compensation. Keep it under 400 words. Tone: formal, legally credible. ${langInstruction}`,
+            `You are a legal assistant helping Indian gig workers file formal complaints. Generate a formal complaint letter addressed to: The Labour Commissioner, Government of Telangana. Reference Telangana Gig and Platform Workers Act 2025 (sections 12, 15, 18). Demand investigation and compensation. 
+            
+            IMPORTANT: Use the following worker details in the letter header and signature. DO NOT use placeholders like [Your Name] or [Insert Date].
+            Worker Name: ${userName || "Anonymous Gig Worker"}
+            Address: ${address || "Hyderabad, Telangana"}
+            Phone: ${phone || "Not Provided"}
+            Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+            
+            Keep it under 400 words. Tone: formal, legally credible. ${langInstruction}`,
         },
         {
           role: "user",
