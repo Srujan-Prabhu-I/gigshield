@@ -1,38 +1,30 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+"use client"
+
+import { useEffect } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Building2, ShieldCheck, Download, BarChart3, TrendingUp, Search, AlertTriangle } from "lucide-react"
+import { Building2, ShieldCheck, Download, BarChart3, TrendingUp, Search, AlertTriangle, Loader2 } from "lucide-react"
 
-export default async function PlatformDashboard() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll() {}
-      }
+export default function PlatformDashboard() {
+  const { user, role, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && (!user || role !== "platform")) {
+      router.push("/")
     }
-  )
+  }, [user, role, loading, router])
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Fetch the platform's profile to get their name
-  let platformName = "Your Platform"
-  if (user) {
-    const { data: profile } = await supabase
-      .from('user_roles')
-      .select('platform_name')
-      .eq('user_id', user.id)
-      .single()
-      
-    if (profile && profile.platform_name) {
-      platformName = profile.platform_name
-    }
+  if (loading || !user || role !== "platform") {
+    return (
+      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3fe56c] animate-spin" />
+      </div>
+    )
   }
 
-  // Mocked platform stats for demo
+  const platformName = "Your Platform"
   const complianceScore = 65 
   const isCertified = complianceScore >= 75
   const badgeTitle = isCertified ? "GigShield Verified Fair Employer Status" : "Action Required to Achieve Certification"

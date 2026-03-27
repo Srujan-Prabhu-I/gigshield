@@ -1,49 +1,35 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+"use client"
+
+import { useEffect } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Users, FileWarning, TrendingDown, Building2, ChevronRight, ScrollText, Clock } from "lucide-react"
+import { Users, FileWarning, TrendingDown, Building2, ChevronRight, ScrollText, Clock, Loader2 } from "lucide-react"
 
-export default async function GovtDashboard() {
-  const cookieStore = await cookies()
-  const supabaseAdmin = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role for govt dashboard to bypass RLS and aggregate all data
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll() {}
-      }
+export default function GovtDashboard() {
+  const { user, role, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && (!user || role !== "govt")) {
+      router.push("/")
     }
-  )
+  }, [user, role, loading, router])
 
-  // Fetch aggregate data
-  const { count: workerCount } = await supabaseAdmin
-    .from('user_roles')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'worker')
-
-  const { count: complaintCount } = await supabaseAdmin
-    .from('grievances')
-    .select('*', { count: 'exact', head: true })
-
-  // For Hackathon demo: Mock some aggregations if no data, otherwise calculate
-  const { data: logs } = await supabaseAdmin
-    .from('earnings_logs')
-    .select('deficit')
-
-  let totalDeficit = 0
-  let avgExploitationScore = 68 // Mocked base
-  if (logs && logs.length > 0) {
-    totalDeficit = logs.reduce((acc, log) => acc + (log.deficit || 0), 0)
-    avgExploitationScore = Math.max(0, 100 - (totalDeficit / logs.length / 100)) // rough logic
+  if (loading || !user || role !== "govt") {
+    return (
+      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3fe56c] animate-spin" />
+      </div>
+    )
   }
 
-  // Fetch recent activity
-  const { data: recentGrievances } = await supabaseAdmin
-    .from('grievances')
-    .select('id, platform_name, created_at, pdf_url')
-    .order('created_at', { ascending: false })
-    .limit(5)
+  // Mock data for government dashboard
+  const workerCount = 12450
+  const complaintCount = 342
+  const totalDeficit = 8500000
+  const avgExploitationScore = 68
+  const recentGrievances = []
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white p-5 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
