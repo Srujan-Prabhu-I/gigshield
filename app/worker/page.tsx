@@ -1,22 +1,33 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+"use client"
+
+import { useEffect } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Calculator, ScrollText, BarChart3, AlertTriangle, CheckCircle2, TrendingDown } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
-export default async function WorkerDashboard() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll() {}
-      }
+export default function WorkerDashboard() {
+  const { user, role, loading } = useAuth()
+  const router = useRouter()
+
+  // Protect route - redirect if not worker role
+  useEffect(() => {
+    if (!loading && (!user || role !== "worker")) {
+      router.push("/")
     }
-  )
+  }, [user, role, loading, router])
 
-  const { data: { user } } = await supabase.auth.getUser()
+  if (loading || !user || role !== "worker") {
+    return (
+      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-[#3fe56c] animate-spin mx-auto mb-4" />
+          <p className="text-neutral-400 font-medium">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Fetch the worker's latest submission to show their personal stats
   let personalDeficit = 0

@@ -22,9 +22,9 @@ export default function SelectRolePage() {
   // Redirect if role already set
   useEffect(() => {
     if (role) {
-      if (role === "worker") router.push("/checker")
-      else if (role === "platform") router.push("/platform-portal")
-      // Add more redirects as needed
+      if (role === "worker") router.push("/worker")
+      else if (role === "platform") router.push("/platform")
+      else if (role === "govt") router.push("/govt")
     }
   }, [role, router])
 
@@ -46,13 +46,15 @@ export default function SelectRolePage() {
         return
       }
 
-      toast.success(`Role updated to ${selectedRole}`)
+      toast.success(`Role set to ${selectedRole}!`)
       
       // Redirect based on selected role
       if (selectedRole === "worker") {
-        router.push("/checker")
+        router.push("/worker")
       } else if (selectedRole === "platform") {
-        router.push("/platform-portal")
+        router.push("/platform")
+      } else if (selectedRole === "govt") {
+        router.push("/govt")
       }
     } catch (error: any) {
       console.error("Error setting role:", error)

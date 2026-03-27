@@ -6,24 +6,38 @@ import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 
 export default function GigShieldHome() {
-  const { openAuthModal, user, role } = useAuth()
+  const { openAuthModal, user, role, loading, mounted } = useAuth()
   const router = useRouter()
 
-  // Map stored role to correct portal path
-  const roleToPath: Record<string, string> = {
-    worker: '/worker',
-    platform: '/platform',
-    government: '/govt',
+  // Redirect authenticated users to their role dashboard
+  if (mounted && user && role) {
+    const roleToPath: Record<string, string> = {
+      worker: '/worker',
+      platform: '/platform',
+      govt: '/govt',
+    }
+    router.push(roleToPath[role] || '/worker')
+    return null
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-[#3fe56c] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-neutral-400 font-medium">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleLogin = (portalRole: string) => {
-    if (user && role) {
-      // Already authenticated — always send to THEIR portal, ignore which card was clicked
-      router.push(roleToPath[role] ?? '/')
-    } else if (user && !role) {
+    if (user && !role) {
+      // Logged in but no role yet
       if (typeof window !== "undefined") localStorage.setItem("intendedRole", portalRole)
       router.push("/select-role")
-    } else {
+    } else if (!user) {
+      // Not logged in
       if (typeof window !== "undefined") localStorage.setItem("intendedRole", portalRole)
       openAuthModal()
     }
