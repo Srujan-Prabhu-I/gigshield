@@ -75,15 +75,15 @@ export default function AuthModal() {
               className="w-full h-12 rounded-xl bg-[#3fe56c] hover:bg-[#37cf61] text-black font-extrabold"
             >
               {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
-              {loading ? "Sending verification..." : "Verify Identity"}
+              {loading ? "Sending..." : "Verify Identity"}
             </Button>
           ) : (
             <div className="text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-[#3fe56c]/20 flex items-center justify-center mx-auto">
                 <ShieldCheck className="w-6 h-6 text-[#3fe56c]" />
               </div>
-              <p className="text-sm text-neutral-300">
-                Verification link sent. Check your email.
+              <p className="text-sm text-neutral-300 font-bold">
+                Check your email
               </p>
               <button
                 onClick={() => {
