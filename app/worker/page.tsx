@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { Calculator, ScrollText, BarChart3, AlertTriangle, CheckCircle2, TrendingDown } from "lucide-react"
 import { Loader2 } from "lucide-react"
@@ -10,6 +11,9 @@ import { Loader2 } from "lucide-react"
 export default function WorkerDashboard() {
   const { user, role, loading } = useAuth()
   const router = useRouter()
+  const [personalDeficit, setPersonalDeficit] = useState(0)
+  const [isExploited, setIsExploited] = useState(false)
+  const [dataLoading, setDataLoading] = useState(false)
 
   // Protect route - redirect if not worker role
   useEffect(() => {
@@ -17,6 +21,35 @@ export default function WorkerDashboard() {
       router.push("/")
     }
   }, [user, role, loading, router])
+
+  // Fetch worker's latest earnings data
+  useEffect(() => {
+    if (!user?.id) return
+    
+    const fetchData = async () => {
+      setDataLoading(true)
+      try {
+        const { data: latestLog, error } = await supabase
+          .from("earnings_logs")
+          .select("deficit")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single()
+        
+        if (!error && latestLog) {
+          setPersonalDeficit(latestLog.deficit || 0)
+          setIsExploited((latestLog.deficit || 0) > 0)
+        }
+      } catch (err) {
+        console.error("Failed to fetch earnings data:", err)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+    
+    fetchData()
+  }, [user?.id])
 
   if (loading || !user || role !== "worker") {
     return (
@@ -27,25 +60,6 @@ export default function WorkerDashboard() {
         </div>
       </div>
     )
-  }
-
-  // Fetch the worker's latest submission to show their personal stats
-  let personalDeficit = 0
-  let isExploited = false
-  
-  if (user) {
-    const { data: latestLog } = await supabase
-      .from('earnings_logs')
-      .select('deficit')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
-      
-    if (latestLog && latestLog.deficit > 0) {
-      personalDeficit = latestLog.deficit
-      isExploited = true
-    }
   }
 
   // Mocked platform marketplace data (since we don't have enough DB entries to aggregate fully yet)
