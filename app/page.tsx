@@ -1,36 +1,93 @@
 "use client"
 
-import Link from "next/link"
-import { ChevronRight, Calculator, ScrollText, BarChart3, ShieldCheck } from "lucide-react"
+import { ChevronRight, Calculator, ScrollText, BarChart3, ShieldCheck, User, Building2, Landmark } from "lucide-react"
 import LiveCounter from "@/components/LiveCounter"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 
 export default function GigShieldHome() {
+  const { openAuthModal, user, role } = useAuth()
+  const router = useRouter()
+
+  // Map stored role to correct portal path
+  const roleToPath: Record<string, string> = {
+    worker: '/worker',
+    platform: '/platform',
+    government: '/govt',
+  }
+
+  const handleLogin = (portalRole: string) => {
+    if (user && role) {
+      // Already authenticated — always send to THEIR portal, ignore which card was clicked
+      router.push(roleToPath[role] ?? '/')
+    } else if (user && !role) {
+      if (typeof window !== "undefined") localStorage.setItem("intendedRole", portalRole)
+      router.push("/select-role")
+    } else {
+      if (typeof window !== "undefined") localStorage.setItem("intendedRole", portalRole)
+      openAuthModal()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white selection:bg-green-500/30 overflow-x-hidden font-sans pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* HERO SECTION */}
-      <section className="px-5 pt-12 pb-10 max-w-4xl mx-auto flex flex-col items-center text-center">
+      <section className="px-5 pt-12 pb-10 max-w-5xl mx-auto flex flex-col items-center text-center">
         <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-5 text-white">
-          15 Million Workers.<br />
-          Zero Protection.<br />
-          <span className="text-[#3fe56c]">Until Now.</span>
+          The Ecosystem of <br />
+          <span className="text-[#3fe56c]">Fair Work.</span>
         </h1>
 
-        <p className="text-neutral-400 text-lg md:text-xl font-medium max-w-lg mx-auto mb-10 leading-relaxed">
-          Empowering India's gig economy with data-driven protection. Reclaim underpaid wages and understand your rights against platform exploitation.
+        <p className="text-neutral-400 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-16 leading-relaxed">
+          GigShield bridges the gap between gig workers, platforms, and policymakers to enforce fair wages and algorithmic transparency across India.
         </p>
 
-        <div className="flex flex-col sm:flex-row w-full gap-4 max-w-md mx-auto justify-center">
-          <Link href="/checker" className="w-full sm:w-auto">
-            <button className="w-full bg-gradient-to-br from-[#3fe56c] to-[#00c853] hover:brightness-110 text-black font-extrabold text-[15px] sm:text-base py-4 sm:py-5 px-8 rounded-2xl transition-all shadow-[0_0_40px_rgba(0,200,83,0.3)] active:scale-95">
-              Check Your Pay
-            </button>
-          </Link>
-          <Link href="/dashboard" className="w-full sm:w-auto">
-            <button className="w-full bg-[#1c1b1b] hover:bg-[#201f1f] text-neutral-100 font-bold text-[15px] sm:text-base py-4 sm:py-5 px-8 rounded-2xl transition-all border border-neutral-800 active:scale-95">
-              View Impact Report
-            </button>
-          </Link>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          {/* Worker Login Card */}
+          <button onClick={() => handleLogin('worker')} className="group flex flex-col items-start bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800 hover:border-[#3fe56c]/50 rounded-[28px] p-8 text-left transition-all active:scale-[0.98] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="w-5 h-5 text-[#3fe56c]" />
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-[#004c1b]/30 flex items-center justify-center mb-6 border border-[#00c853]/20 group-hover:scale-110 transition-transform">
+              <User className="w-7 h-7 text-[#3fe56c]" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">Worker Portal</h3>
+            <p className="text-neutral-400 text-sm/relaxed font-medium mb-6">
+              Compare platform pay, track deficits, and file formal grievances against unfair deactivations.
+            </p>
+            <div className="mt-auto text-[11px] font-bold tracking-widest text-[#3fe56c] uppercase">Secure Login</div>
+          </button>
+
+          {/* Platform Login Card */}
+          <button onClick={() => handleLogin('platform')} className="group flex flex-col items-start bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800 hover:border-[#2fb9f9]/50 rounded-[28px] p-8 text-left transition-all active:scale-[0.98] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="w-5 h-5 text-[#2fb9f9]" />
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-[#00344b]/30 flex items-center justify-center mb-6 border border-[#2fb9f9]/20 group-hover:scale-110 transition-transform">
+              <Building2 className="w-7 h-7 text-[#2fb9f9]" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">Platform Portal</h3>
+            <p className="text-neutral-400 text-sm/relaxed font-medium mb-6">
+              Access competitor intelligence, benchmark worker retention, and maintain compliance certifications.
+            </p>
+            <div className="mt-auto text-[11px] font-bold tracking-widest text-[#2fb9f9] uppercase">Secure Login</div>
+          </button>
+
+          {/* Govt Login Card */}
+          <button onClick={() => handleLogin('govt')} className="group flex flex-col items-start bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800 hover:border-[#ff7162]/50 rounded-[28px] p-8 text-left transition-all active:scale-[0.98] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="w-5 h-5 text-[#ff7162]" />
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-[#68000b]/30 flex items-center justify-center mb-6 border border-[#ff7162]/20 group-hover:scale-110 transition-transform">
+              <Landmark className="w-7 h-7 text-[#ff7162]" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">Govt Portal</h3>
+            <p className="text-neutral-400 text-sm/relaxed font-medium mb-6">
+              Review systemic exploitation data, process worker complaints, and enforce the 2025 Platform Act.
+            </p>
+            <div className="mt-auto text-[11px] font-bold tracking-widest text-[#ff7162] uppercase">Secure Login</div>
+          </button>
         </div>
       </section>
 
@@ -41,120 +98,13 @@ export default function GigShieldHome() {
             <svg width="180" height="180" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h3v7H4zM10.5 10h3v7h-3zM2 19h20v3H2zM17 10h3v7h-3zM12 1L2 6v2h20V6L12 1z"/></svg>
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] font-bold tracking-[0.2em] text-[#ff7162] uppercase mb-2">Exploitation Alert</p>
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[#ff7162] uppercase mb-2">Platform Impact</p>
             <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-2">₹12Cr+</h2>
-            <p className="text-neutral-400 font-medium max-w-[200px] text-sm/relaxed">Underpaid Wages Detected Across India</p>
+            <p className="text-neutral-400 font-medium max-w-[200px] text-sm/relaxed">Underpaid Wages Tracked for Govt Intervention</p>
           </div>
         </div>
 
-        <LiveCounter label="Worker Reports Submitted" suffix="+" />
-      </section>
-
-      {/* FEATURES (THE SENTINEL SUITE) */}
-      <section className="px-5 pt-16 pb-12 max-w-4xl mx-auto">
-        <div className="mb-8 md:mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">The Sentinel Suite</h2>
-          <p className="text-neutral-400 font-medium text-base md:text-lg max-w-md">Precision tools designed to shift the power dynamic back to the workers.</p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2">
-          
-          <Link href="/checker" className="block group">
-            <div className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col items-start active:scale-[0.98]">
-              <div className="w-12 h-12 rounded-2xl bg-[#004c1b]/30 flex items-center justify-center mb-6 border border-[#00c853]/20">
-                <Calculator className="w-6 h-6 text-[#3fe56c]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Fair Pay Checker</h3>
-              <p className="text-neutral-400 text-sm/relaxed font-medium mb-8">Compare your earnings against industry standards and legal minimums to detect hidden algorithmic cuts.</p>
-              <div className="mt-auto flex items-center text-[11px] font-bold tracking-widest text-[#3fe56c] uppercase">
-                Analyze Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/grievance" className="block group">
-            <div className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col items-start active:scale-[0.98]">
-              <div className="w-12 h-12 rounded-2xl bg-[#68000b]/30 flex items-center justify-center mb-6 border border-[#ff7162]/20">
-                <ScrollText className="w-6 h-6 text-[#ff7162]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Legal Rights Guide</h3>
-              <p className="text-neutral-400 text-sm/relaxed font-medium mb-8">Auto-generate complaint letters based on simplified legal frameworks curated for Indian gig workers.</p>
-              <div className="mt-auto flex items-center text-[11px] font-bold tracking-widest text-[#ff7162] uppercase">
-                Learn Rights <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/leaderboard" className="block group md:col-span-2">
-            <div className="bg-[#131313] md:bg-[#1c1b1b] hover:bg-[#1c1b1b] md:hover:bg-[#201f1f] border border-neutral-800/50 md:border-transparent md:hover:border-neutral-800/50 rounded-[28px] p-8 transition-all h-full flex flex-col md:flex-row md:items-center justify-between active:scale-[0.98]">
-              <div className="mb-6 md:mb-0 max-w-sm">
-                <div className="w-12 h-12 rounded-2xl bg-[#00344b]/30 flex items-center justify-center mb-6 md:hidden border border-[#2fb9f9]/20">
-                  <BarChart3 className="w-6 h-6 text-[#2fb9f9]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-3">
-                  <BarChart3 className="w-5 h-5 text-[#2fb9f9] hidden md:block" />
-                  Exploitation Index
-                </h3>
-                <p className="text-neutral-400 text-sm/relaxed font-medium md:mb-0 mb-6">Real-time ranking of platforms based on worker treatment, pay transparency, and safety.</p>
-              </div>
-              <div className="flex items-center text-[11px] font-bold tracking-widest text-[#2fb9f9] uppercase bg-[#001e2d] px-5 py-3 rounded-full shrink-0">
-                View Rankings <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
-        </div>
-      </section>
-
-      {/* WORKER VOICES */}
-      <section className="px-5 py-12 max-w-4xl mx-auto">
-        <div className="mb-8 md:mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Worker Voices</h2>
-          <p className="text-neutral-400 font-medium text-base md:text-lg max-w-md">Anonymous stories from real gig workers across Telangana.</p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            { quote: "I drive 14 hours daily for Rapido. After petrol and bike maintenance, I take home ₹350. GigShield showed me I am being underpaid by ₹8,400 every month.", city: "Karimnagar", platform: "Rapido" },
-            { quote: "Swiggy deactivated my account for 3 days without reason. I lost ₹4,500 in earnings. I didn't even know I had legal rights until I used GigShield.", city: "Hyderabad", platform: "Swiggy" },
-            { quote: "I used the grievance tool to draft a complaint letter. The Labour Commissioner's office actually responded within a week. This platform works.", city: "Warangal", platform: "Zomato" },
-          ].map((story, i) => (
-            <div key={i} className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800/50 rounded-[24px] p-6 transition-colors flex flex-col justify-between">
-              <p className="text-neutral-300 text-sm font-medium leading-relaxed mb-6">&ldquo;{story.quote}&rdquo;</p>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black text-neutral-500">
-                  {story.platform[0]}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-neutral-400">{story.platform} Worker</p>
-                  <p className="text-[10px] font-medium text-neutral-600">{story.city}, Telangana</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="px-5 py-16 max-w-4xl mx-auto">
-        <div className="bg-[#131313] border border-neutral-800/50 rounded-[32px] p-8 md:p-12 text-center relative overflow-hidden">
-          {/* Subtle glow background */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[50%] bg-[#00c853] opacity-5 blur-[100px] pointer-events-none rounded-full"></div>
-          
-          <ShieldCheck className="w-12 h-12 text-[#3ce36a] mx-auto mb-6 opacity-80" />
-          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
-            Stop Working<br />
-            for Free.
-          </h2>
-          <p className="text-neutral-400 font-medium text-sm md:text-base max-w-[280px] md:max-w-md mx-auto mb-10 leading-relaxed">
-            Join the movement for transparent gig work. GigShield is 100% free for workers, forever.
-          </p>
-          <Link href="/checker" className="inline-block w-full sm:w-auto">
-            <button className="w-full sm:w-auto bg-[#3fe56c] hover:bg-[#3ce36a] text-[#002108] font-extrabold text-[15px] sm:text-base py-5 px-10 rounded-full transition-transform active:scale-95 shadow-[0_10px_40px_rgba(63,229,108,0.2)]">
-              PROTECT MY PAY
-            </button>
-          </Link>
-        </div>
+        <LiveCounter label="Protected Worker Profiles" suffix="+" />
       </section>
 
     </div>

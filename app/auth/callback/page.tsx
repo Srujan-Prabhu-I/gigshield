@@ -1,31 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
+import { useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function AuthCallback() {
-  const router = useRouter();
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    if (hasRun.current) return;
+    hasRun.current = true;
 
     const handleAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
+      // Extract the PKCE code from the URL
+      const code = new URLSearchParams(window.location.search).get("code");
 
-      if (!error && data.session) {
-        console.log("User verified:", data.session.user);
-        router.push("/");
-      } else {
-        console.error("Auth error:", error);
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("Auth exchange error:", error);
+          // Hard redirect so stale state is cleared
+          window.location.href = "/";
+          return;
+        }
       }
+
+      // Hard redirect ensures the new session cookie is sent with the next request
+      // so middleware can read it and route the user to the correct portal
+      window.location.href = "/select-role";
     };
 
     handleAuth();
-  }, [router]);
+  }, []);
 
   return (
     <div className="flex items-center justify-center h-screen text-white bg-[#0e0e0e] font-sans">

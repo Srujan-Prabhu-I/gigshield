@@ -7,19 +7,46 @@ import { ShieldCheck } from "lucide-react"
 
 export default function Navbar() {
   const pathname = usePathname()
-  const { user, openAuthModal, signOut, mounted } = useAuth()
+  const { user, role, openAuthModal, signOut, mounted } = useAuth()
 
   // Deployment tracer
-  console.log("GigShield Version: v3.0.0");
+  console.log("GigShield Version: v4.0.0");
 
-  const navLinks = [
-    { name: "For Platforms", href: "/platform-portal" },
+  const publicLinks = [
     { name: "Compare Platforms", href: "/compare" },
     { name: "Check My Pay", href: "/checker" },
     { name: "Worker Rights", href: "/worker-rights" },
-    { name: "Impact", href: "/impact" },
     { name: "Exploitation Index", href: "/leaderboard" },
+    { name: "Impact", href: "/impact" },
   ]
+
+  const workerLinks = [
+    { name: "Marketplace", href: "/worker" },
+    { name: "Check My Pay", href: "/worker/checker" },
+    { name: "File Grievance", href: "/worker/grievance" },
+    { name: "My Rights", href: "/worker/rights" },
+    { name: "Exploitation Index", href: "/worker/exploitation" },
+  ]
+
+  const platformLinks = [
+    { name: "Dashboard", href: "/platform" },
+    { name: "Competitor Intel", href: "/platform/competitors" },
+    { name: "Self-Audit", href: "/platform/audit" },
+    { name: "Worker Trends", href: "/platform/trends" },
+  ]
+
+  const govtLinks = [
+    { name: "Metrics", href: "/govt" },
+    { name: "Worker Data", href: "/govt/workers" },
+    { name: "Complaints", href: "/govt/complaints" },
+    { name: "Compliance", href: "/govt/compliance" },
+    { name: "Policy Report", href: "/govt/policy" },
+  ]
+
+  let navLinks = publicLinks
+  if (role === 'worker') navLinks = workerLinks
+  if (role === 'platform') navLinks = platformLinks
+  if (role === 'government') navLinks = govtLinks
 
   return (
     <nav className="bg-[#0e0e0e]/90 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-50">

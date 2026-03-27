@@ -9,7 +9,10 @@ export async function requestOtp(input: { email?: string }) {
   const supabase = getSupabaseAuthClient()
 
   if (input.email) {
-    const redirectTo = "https://gigshield-six.vercel.app/auth/callback"
+    // Dynamically grab the current origin so you can test on localhost
+    const redirectTo = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : "https://gigshield-six.vercel.app/auth/callback"
     
     return supabase.auth.signInWithOtp({
       email: input.email,
@@ -73,4 +76,54 @@ export async function upsertProfileForUser(user: User) {
 
   return { data, error }
 }
+
+export async function fetchUserRole(userId: string) {
+  const supabase = getSupabaseAuthClient()
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single()
+  
+  if (error || !data) {
+    return null
+  }
+  return data.role
+}
+
+export async function setUserRole(userId: string, role: string) {
+  const supabase = getSupabaseAuthClient()
+  
+  // Check if role already exists to prevent duplicates
+  const { data: existing, error: checkError } = await supabase
+    .from("user_roles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  if (checkError && checkError.code !== "PGRST116") {
+    return { data: null, error: checkError }
+  }
+
+  // If role doesn't exist, insert it
+  if (!existing) {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .insert([{ user_id: userId, role: role }])
+    return { data, error }
+  }
+
+  // If role exists but different, update it
+  if (existing && existing.role !== role) {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .update({ role: role })
+      .eq("user_id", userId)
+    return { data, error }
+  }
+
+  // Role already set correctly
+  return { data: existing, error: null }
+}
+
 
