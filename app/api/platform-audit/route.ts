@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       weeklyHours,
     } = body
 
-    let score = 50
+    let score = 100
     const violations: string[] = []
     const actionItems: string[] = []
 
@@ -29,17 +29,17 @@ export async function POST(req: NextRequest) {
     if (!hasMinGuarantee) {
       score -= 15
       violations.push("No minimum earnings guarantee")
-      actionItems.push("Implement a minimum weekly/ monthly guarantee policy.")
+      actionItems.push("Implement a minimum weekly/monthly guarantee policy.")
     }
     if (Number(weeklyHours) > 60) {
-      score -= 10
+      score -= 20
       violations.push("Average weekly hours exceed safe limit")
-      actionItems.push("Cap weekly work to reasonable limits and rotate shifts.")
+      actionItems.push("Cap weekly work to reasonable limits.")
     }
-    if (Number(avgPay) < 70) {
-      score -= 10
-      violations.push("Average pay is below fair threshold")
-      actionItems.push("Increase payment rates per delivery/km.")
+    if (Number(avgPay) < 93) {
+      score -= 30
+      violations.push("Average pay is below Telangana Act minimum (₹93/hr)")
+      actionItems.push("Increase payment rates to meet legal standards.")
     }
 
     score = Math.max(0, Math.min(100, score))
