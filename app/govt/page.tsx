@@ -25,11 +25,11 @@ export default function GovtDashboard() {
   }
 
   // Mock data for government dashboard
-  const workerCount = 12450
-  const complaintCount = 342
-  const totalDeficit = 8500000
-  const avgExploitationScore = 68
-  const recentGrievances = []
+  const workerCount: number = 12450
+  const complaintCount: number = 342
+  const totalDeficit: number = 8500000
+  const avgExploitationScore: number = 68
+  const recentGrievances: Array<{id: string; platform_name: string; created_at: string; pdf_url?: string}> = []
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white p-5 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
