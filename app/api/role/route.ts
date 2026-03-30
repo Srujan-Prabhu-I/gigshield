@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 )
 
 // Allow fetching the current user's role securely
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -40,8 +40,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ role: roleData.role })
 
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Use admin client to bypass RLS for role assignment just to be safe
-    const { data, error: dbError } = await supabaseAdmin
+    const { error: dbError } = await supabaseAdmin
       .from("user_roles")
       .upsert([
         { user_id: user.id, role }
@@ -85,7 +86,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, role })
 
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

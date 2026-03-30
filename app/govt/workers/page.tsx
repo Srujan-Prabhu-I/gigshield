@@ -65,8 +65,8 @@ export default async function GovtWorkersData() {
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Submission ID</th>
                 <th className="px-6 py-4">Platform</th>
-                <th className="px-6 py-4">Total Earnings</th>
-                <th className="px-6 py-4">Total Hours</th>
+                <th className="px-6 py-4">Monthly Earnings</th>
+                <th className="px-6 py-4">Total Hours/Mo</th>
                 <th className="px-6 py-4">Effective Rate</th>
                 <th className="px-6 py-4">Legal Deficit</th>
                 <th className="px-6 py-4">Logged At</th>
@@ -75,8 +75,9 @@ export default async function GovtWorkersData() {
             <tbody className="divide-y divide-neutral-800">
               {logs && logs.length > 0 ? (
                 logs.map((log) => {
-                  const effectiveRate = log.total_earnings / log.total_hours
-                  const isUnderpaid = log.deficit > 0
+                  const monthlyHours = (log.working_days || 0) * (log.hours_per_day || 0)
+                  const effectiveRate = monthlyHours > 0 ? (log.monthly_earnings || 0) / monthlyHours : 0
+                  const isUnderpaid = (log.calculated_deficit || 0) > 0
                   
                   return (
                     <tr key={log.id} className="hover:bg-[#1a1919] transition-colors">
@@ -88,12 +89,12 @@ export default async function GovtWorkersData() {
                         )}
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-neutral-500">{log.id.split('-')[0]}...</td>
-                      <td className="px-6 py-4 font-bold text-white uppercase">{log.platform_name || 'UNKNOWN'}</td>
-                      <td className="px-6 py-4 font-medium text-white">₹{log.total_earnings}</td>
-                      <td className="px-6 py-4 text-neutral-300">{log.total_hours} hr</td>
+                      <td className="px-6 py-4 font-bold text-white uppercase">{log.platform || 'UNKNOWN'}</td>
+                      <td className="px-6 py-4 font-medium text-white">₹{log.monthly_earnings || 0}</td>
+                      <td className="px-6 py-4 text-neutral-300">{monthlyHours > 0 ? `${monthlyHours} hr` : 'N/A'}</td>
                       <td className="px-6 py-4 text-neutral-300">₹{effectiveRate.toFixed(1)}/hr</td>
                       <td className={`px-6 py-4 font-bold ${isUnderpaid ? 'text-[#ff7162]' : 'text-neutral-500'}`}>
-                        {isUnderpaid ? `₹${log.deficit}` : '₹0'}
+                        {isUnderpaid ? `₹${log.calculated_deficit}` : '₹0'}
                       </td>
                       <td className="px-6 py-4 text-neutral-500 text-xs">
                         {new Date(log.created_at).toLocaleDateString()}

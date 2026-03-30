@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { ChevronRight, Calculator, ScrollText, BarChart3, ShieldCheck, User, Building2, Landmark } from "lucide-react"
 import LiveCounter from "@/components/LiveCounter"
 import { useAuth } from "@/lib/auth-context"
@@ -10,15 +11,17 @@ export default function GigShieldHome() {
   const router = useRouter()
 
   // Redirect authenticated users to their role dashboard
-  if (mounted && user && role) {
-    const roleToPath: Record<string, string> = {
-      worker: '/worker',
-      platform: '/platform',
-      govt: '/govt',
+  useEffect(() => {
+    if (mounted && user && role) {
+      const roleToPath: Record<string, string> = {
+        worker: '/worker',
+        platform: '/platform',
+        govt: '/govt',
+        government: '/govt',
+      }
+      router.replace(roleToPath[role] || '/')
     }
-    router.push(roleToPath[role] || '/worker')
-    return null
-  }
+  }, [mounted, user, role, router])
 
   if (loading) {
     return (
@@ -53,9 +56,24 @@ export default function GigShieldHome() {
           <span className="text-[#3fe56c]">Fair Work.</span>
         </h1>
 
-        <p className="text-neutral-400 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-16 leading-relaxed">
+        <p className="text-neutral-400 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-8 leading-relaxed">
           GigShield bridges the gap between gig workers, platforms, and policymakers to enforce fair wages and algorithmic transparency across India.
         </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-16">
+          <button 
+            onClick={() => router.push('/register')}
+            className="w-full sm:w-auto bg-[#3fe56c] hover:bg-[#37cf61] text-black font-black px-8 py-4 rounded-2xl text-lg transition-all shadow-[0_0_20px_rgba(63,229,108,0.2)] active:scale-95"
+          >
+            Join the Movement
+          </button>
+          <button 
+            onClick={() => router.push('/leaderboard')}
+            className="w-full sm:w-auto bg-transparent hover:bg-white/5 text-white font-bold px-8 py-4 rounded-2xl text-lg border border-neutral-800 transition-all active:scale-95"
+          >
+            View Exploitation Index
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           {/* Worker Login Card */}

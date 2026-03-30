@@ -19,6 +19,14 @@ const ISSUE_TYPES = [
   "Other"
 ]
 
+type SpeechRecognitionResultEvent = {
+  results: Array<Array<{ transcript: string }>>
+}
+
+type SpeechRecognitionErrorEvent = {
+  error?: string
+}
+
 export default function GrievancePage() {
   const [platform, setPlatform] = useState("")
   const [city, setCity] = useState("")
@@ -40,7 +48,20 @@ export default function GrievancePage() {
       return
     }
 
-    const SpeechRecognition = (window as any).webkitSpeechRecognition
+    const SpeechRecognition = (
+      window as unknown as {
+        webkitSpeechRecognition: new () => {
+          lang: string
+          continuous: boolean
+          interimResults: boolean
+          onstart: (() => void) | null
+          onresult: ((event: SpeechRecognitionResultEvent) => void) | null
+          onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+          onend: (() => void) | null
+          start: () => void
+        }
+      }
+    ).webkitSpeechRecognition
     const recognition = new SpeechRecognition()
 
     const langMap: Record<string, string> = {
@@ -58,12 +79,12 @@ export default function GrievancePage() {
       toast.success("Listening... Speak your grievance now.", { duration: 4000 })
     }
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
       const transcript = event.results[0][0].transcript
       setDescription((prev) => prev ? `${prev} ${transcript}` : transcript)
     }
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'no-speech') {
         toast.error("Failed to capture voice. Please try again.")
       }
@@ -121,8 +142,9 @@ export default function GrievancePage() {
       // Auto download as requested
       handleDownloadPDF(data.letter)
       
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to generate letter"
+      toast.error(message)
     } finally {
       setIsGenerating(false)
     }

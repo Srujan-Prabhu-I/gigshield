@@ -8,7 +8,7 @@ export default function PwaRegister() {
     const checkVersionAndClearCache = async () => {
       // Get stored version from localStorage
       const storedVersion = localStorage.getItem('app-version')
-      const currentVersion = (window as any).APP_VERSION || 'unknown'
+      const currentVersion = (window as Window & { APP_VERSION?: string }).APP_VERSION || 'unknown'
       
       // If version changed, clear all caches and service workers
       if (storedVersion !== currentVersion) {

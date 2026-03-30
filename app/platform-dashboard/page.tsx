@@ -37,11 +37,7 @@ export default function PlatformDashboardPage() {
   const [data, setData] = useState<PlatformData[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  async function fetchData() {
+  const fetchData = async () => {
     const { data: logs, error } = await supabase
       .from("earnings_logs")
       .select("platform, monthly_earnings, calculated_deficit")
@@ -52,8 +48,7 @@ export default function PlatformDashboardPage() {
       return
     }
 
-    // Aggregate by platform
-    const grouped = logs.reduce((acc, log) => {
+    const grouped = (logs as EarningsLog[]).reduce((acc, log) => {
       if (!acc[log.platform]) {
         acc[log.platform] = { count: 0, totalEarnings: 0, totalDeficit: 0 }
       }
@@ -81,6 +76,11 @@ export default function PlatformDashboardPage() {
     setData(platformData)
     setLoading(false)
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData()
+  }, [])
 
   if (loading) {
     return (

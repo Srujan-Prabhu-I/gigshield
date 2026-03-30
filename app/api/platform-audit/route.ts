@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +17,10 @@ export async function POST(req: NextRequest) {
       hasMinGuarantee,
       weeklyHours,
     } = body
+
+    if (!platform) {
+        return NextResponse.json({ error: "Platform name is required" }, { status: 400 })
+    }
 
     let score = 100
     const violations: string[] = []
@@ -48,9 +58,47 @@ export async function POST(req: NextRequest) {
     // Calculate estimated penalty for non-compliant platforms
     let estimatedPenalty = undefined
     if (score < 50) {
-      // Simple penalty calculation: deficit * 100 (as requested)
       const deficit = 100 - score
       estimatedPenalty = deficit * 100
+    }
+
+    // Persist to database
+    // Brute-force cleanup of duplicates before upsert to prevent 406/500 errors
+    await supabaseAdmin.from('platform_profiles').delete().eq('platform_name', platform)
+    
+    // 1. Update legacy platform_rates table
+    await supabaseAdmin.from('platform_rates').upsert(
+      { 
+        platform: platform, 
+        compliance_score: score, 
+        pay_per_delivery: Number(avgPay) || 0 
+      }, 
+      { onConflict: 'platform' }
+    )
+
+    // 2. Update the new platform_profiles table
+    const { error: dbError } = await supabaseAdmin.from('platform_profiles').insert(
+      { 
+        platform_name: platform, 
+        compliance_score: score,
+        has_insurance: !!hasInsurance,
+        has_grievance_portal: !!hasGrievance,
+        has_min_guarantee: !!hasMinGuarantee,
+        last_audit_at: new Date().toISOString(),
+        audit_data: {
+          violations,
+          actionItems,
+          status,
+          weeklyHours: Number(weeklyHours),
+          avgPay: Number(avgPay)
+        }
+      }
+    )
+    
+    if (dbError) {
+      console.error("Failed to persist audit to platform_profiles:", dbError)
+      // Return 500 if database persistence fails
+      return NextResponse.json({ error: "Failed to save audit results", details: dbError }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -62,7 +110,7 @@ export async function POST(req: NextRequest) {
       estimatedPenalty,
     })
   } catch (error) {
-    console.error(error)
+    console.error("Audit error:", error)
     return NextResponse.json({ error: "Failed to run platform audit" }, { status: 500 })
   }
 }

@@ -15,6 +15,8 @@ export default function WorkerDashboard() {
   const [isExploited, setIsExploited] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
 
+  const [platforms, setPlatforms] = useState<any[]>([])
+  
   // Protect route - redirect if not worker role
   useEffect(() => {
     if (!loading && (!user || role !== "worker")) {
@@ -22,7 +24,7 @@ export default function WorkerDashboard() {
     }
   }, [user, role, loading, router])
 
-  // Fetch worker's latest earnings data
+  // Fetch worker's latest earnings data and platforms
   useEffect(() => {
     if (!user?.id) return
     
@@ -35,14 +37,33 @@ export default function WorkerDashboard() {
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(1)
-          .single()
+          .maybeSingle()
         
         if (!error && latestLog) {
           setPersonalDeficit(latestLog.deficit || 0)
           setIsExploited((latestLog.deficit || 0) > 0)
         }
+
+        const { data: platformData } = await supabase
+          .from("platform_rates")
+          .select("*")
+          .order("compliance_score", { ascending: false })
+          .limit(6)
+
+        if (platformData) {
+          const formatted = platformData.map(p => ({
+            name: p.platform,
+            type: "Gig Platform",
+            avgPay: p.pay_per_delivery ? Math.round(p.pay_per_delivery * 3.5) : 80, // rough hourly estimate
+            minWage: 93,
+            status: p.compliance_score >= 65 ? "Fair" : p.compliance_score >= 45 ? "Moderate" : "Severe",
+            score: p.compliance_score,
+            features: [p.has_min_guarantee, p.has_grievance_portal, p.has_insurance]
+          }))
+          setPlatforms(formatted)
+        }
       } catch (err) {
-        console.error("Failed to fetch earnings data:", err)
+        console.error("Failed to fetch dashboard data:", err)
       } finally {
         setDataLoading(false)
       }
@@ -62,16 +83,6 @@ export default function WorkerDashboard() {
     )
   }
 
-  // Mocked platform marketplace data (since we don't have enough DB entries to aggregate fully yet)
-  const platforms = [
-    { name: "Swiggy", type: "Food Delivery", avgPay: 85, minWage: 120, status: "Severe", score: 42, features: [false, true, false] },
-    { name: "Zomato", type: "Food Delivery", avgPay: 92, minWage: 120, status: "Moderate", score: 65, features: [true, true, false] },
-    { name: "Uber", type: "Ride Hailing", avgPay: 145, minWage: 120, status: "Fair", score: 88, features: [true, true, true] },
-    { name: "Rapido", type: "Ride Hailing", avgPay: 65, minWage: 120, status: "Severe", score: 31, features: [false, false, false] },
-    { name: "Urban Company", type: "Home Services", avgPay: 180, minWage: 120, status: "Fair", score: 92, features: [true, true, true] },
-    { name: "Zepto", type: "Quick Commerce", avgPay: 78, minWage: 120, status: "Severe", score: 39, features: [false, true, false] },
-  ]
-
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white p-5 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-6xl mx-auto space-y-12">
@@ -89,13 +100,18 @@ export default function WorkerDashboard() {
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-3 pt-4">
               <Link href="/worker/checker">
-                <button className="bg-[#3fe56c] hover:bg-[#37cf61] text-black font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(63,229,108,0.2)] active:scale-95 flex items-center gap-2">
-                  <Calculator className="w-4 h-4" /> Check Today's Pay
+                  <button className="bg-[#3fe56c] hover:bg-[#37cf61] text-black font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(63,229,108,0.2)] active:scale-95 flex items-center gap-2">
+                  <Calculator className="w-4 h-4" /> Check Today&apos;s Pay
                 </button>
               </Link>
               <Link href="/worker/grievance">
                 <button className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center gap-2">
                   <ScrollText className="w-4 h-4 text-[#ff7162]" /> File Grievance
+                </button>
+              </Link>
+              <Link href="/worker/history">
+                <button className="bg-[#1c1b1b] hover:bg-[#201f1f] border border-neutral-800 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-[#3fe56c]" /> View History
                 </button>
               </Link>
             </div>
@@ -134,9 +150,9 @@ export default function WorkerDashboard() {
                     <CheckCircle2 className="w-5 h-5" />
                     <span className="font-bold tracking-widest text-[11px] uppercase">Status Healthy</span>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">You're Protected</h3>
+                  <h3 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">You&apos;re Protected</h3>
                   <p className="text-neutral-400 font-medium text-sm leading-relaxed mb-5">
-                    We haven't detected significant wage theft in your recent logs. Keep tracking daily to assure compliance.
+                    We haven&apos;t detected significant wage theft in your recent logs. Keep tracking daily to assure compliance.
                   </p>
                   <Link href="/worker/checker">
                     <button className="text-[11px] font-bold tracking-widest text-[#3fe56c] uppercase bg-[#002108] hover:bg-[#00341a] px-4 py-2 rounded-lg transition-colors border border-[#00c853]/20">

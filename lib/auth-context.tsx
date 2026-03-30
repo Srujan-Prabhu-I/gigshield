@@ -6,10 +6,13 @@ import type { User } from "@supabase/supabase-js"
 import {
   onAuthStateChanged,
   requestOtp,
+  verifyOtp,
   signOutAuth,
-  upsertProfileForUser,
-  fetchUserRole
+  fetchUserRole,
+  getCurrentUser
 } from "@/lib/supabase-auth"
+import type { Session } from "@supabase/supabase-js"
+import { useRouter } from "next/navigation"
 
 type AuthContextType = {
   user: User | null
@@ -19,7 +22,8 @@ type AuthContextType = {
   authModalOpen: boolean
   openAuthModal: () => void
   closeAuthModal: () => void
-  sendMagicLink: (input: { email?: string }) => Promise<boolean>
+  sendOtpCode: (input: { email?: string }) => Promise<boolean>
+  verifyOtpCode: (input: { email?: string; token: string }) => Promise<boolean>
   signOut: () => Promise<void>
   setRole: (role: string) => void
 }
@@ -32,97 +36,95 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
   const hasRunRef = useRef(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  // Ensure user exists in metadata
   useEffect(() => {
-    if (!user || hasRunRef.current) return
-
-    hasRunRef.current = true
-
-  const ensureProfile = async () => {
-      try {
-        await upsertProfileForUser(user!)
-      } catch {
-        // Non-critical, ignore profile upsert errors silently
-      }
-    }
-
-    ensureProfile()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!user) return
+    // No-op for now as we use user_roles
   }, [user?.id])
 
-
-  // Auth state listener - only set user from session
+  // Auth state listener - REAL SUPABASE AUTH
   useEffect(() => {
     let mounted = true
+    
+    // Initial fetch
+    const getInitialAuth = async () => {
+      try {
+        const { user } = await getCurrentUser()
+        if (!mounted) return
+        
+        if (user) {
+          setUser(user)
+          const fetchedRole = await fetchUserRole(user.id)
+          if (mounted) setRoleState(fetchedRole)
+        } else {
+          setUser(null)
+          setRoleState(null)
+        }
+      } catch (err) {
+        console.error("Auth init error:", err)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    
+    getInitialAuth()
 
-    const { data } = onAuthStateChanged((_event: any, session: any) => {
+    // Subscription
+    const { data: { subscription } } = onAuthStateChanged(async (event, session) => {
       if (!mounted) return
-      setUser(session?.user ?? null)
+      
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      
+      if (currentUser) {
+        const fetchedRole = await fetchUserRole(currentUser.id)
+        if (mounted) setRoleState(fetchedRole)
+      } else {
+        setRoleState(null)
+      }
+      
       setLoading(false)
     })
 
-    return () => {
+    return () => { 
       mounted = false
-      data.subscription.unsubscribe()
+      subscription.unsubscribe() 
     }
   }, [])
 
-  // Role fetcher - separate effect, only runs when user changes
-  useEffect(() => {
-    if (!user?.id) {
-      setRoleState(null)
-      return
-    }
-
-    let isMounted = true
-
-    const fetchRole = async () => {
-      try {
-        const fetchedRole = await fetchUserRole(user.id)
-        if (isMounted) {
-          setRoleState(fetchedRole)
-        }
-      } catch (error) {
-        console.error("Failed to fetch role:", error)
-        if (isMounted) setRoleState(null)
-      }
-    }
-
-    fetchRole()
-
-    return () => {
-      isMounted = false
-    }
-  }, [user?.id])
-
-  const sendMagicLink = useCallback(async (input: { email?: string }) => {
+  const sendOtpCode = useCallback(async (input: { email?: string }) => {
     const { error } = await requestOtp(input)
     if (error) {
-      console.error("Magic link request failed:", error)
-      toast.error(error.message || "Failed to send magic link.")
+      toast.error(error.message)
       return false
     }
-    toast.success("Magic link sent. Please check your email.")
+    return true
+  }, [])
+
+  const verifyOtpCode = useCallback(async (input: { email?: string; token: string }) => {
+    const { error } = await verifyOtp(input)
+    if (error) {
+      toast.error(error.message)
+      return false
+    }
     return true
   }, [])
 
   const signOut = useCallback(async () => {
-    const { error } = await signOutAuth()
-    if (error) {
-      console.error("Sign out failed:", error)
-      toast.error("Failed to sign out.")
-      return
-    }
+    await signOutAuth()
+    // Hard clear of mock cookie just in case it's lingering from a previous session
+    document.cookie = `gigshield_demo=; path=/; max-age=0`
     setUser(null)
     setRoleState(null)
-    // Hard redirect clears session cookies and prevents stale state on protected routes
-    window.location.href = "/"
-  }, [])
+    router.push("/")
+  }, [router])
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -133,11 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authModalOpen,
       openAuthModal: () => setAuthModalOpen(true),
       closeAuthModal: () => setAuthModalOpen(false),
-      sendMagicLink,
+      sendOtpCode,
+      verifyOtpCode,
       signOut,
       setRole: (r: string) => setRoleState(r),
     }),
-    [authModalOpen, loading, sendMagicLink, signOut, user, role, mounted]
+    [authModalOpen, loading, sendOtpCode, verifyOtpCode, signOut, user, role, mounted]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

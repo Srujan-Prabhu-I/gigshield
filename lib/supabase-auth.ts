@@ -1,24 +1,36 @@
 import { type User } from "@supabase/supabase-js"
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 import { supabase as browserClient } from "./supabase"
 
 export function getSupabaseAuthClient() {
   return browserClient
 }
 
+export async function signUpWithPassword(email: string, password: string, options?: any) {
+  const supabase = getSupabaseAuthClient()
+  return supabase.auth.signUp({
+    email,
+    password,
+    options
+  })
+}
+
+export async function signInWithPassword(email: string, password: string) {
+  const supabase = getSupabaseAuthClient()
+  return supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+}
+
 export async function requestOtp(input: { email?: string }) {
   const supabase = getSupabaseAuthClient()
 
   if (input.email) {
-    // Dynamically grab the current origin so you can test on localhost
-    const redirectTo = typeof window !== 'undefined' 
-      ? `${window.location.origin}/auth/callback`
-      : "https://gigshield-six.vercel.app/auth/callback"
-    
     return supabase.auth.signInWithOtp({
       email: input.email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: redirectTo,
       },
     })
   }
@@ -56,74 +68,47 @@ export async function getCurrentUser() {
 }
 
 export function onAuthStateChanged(
-  callback: (event: any, session: any) => void
+  callback: (event: AuthChangeEvent, session: Session | null) => void
 ) {
   return getSupabaseAuthClient().auth.onAuthStateChange(callback)
 }
 
-export async function upsertProfileForUser(user: User) {
-  const supabase = getSupabaseAuthClient()
-  const { data, error } = await (supabase as any)
-    .from("profiles")
-    .upsert([
-      {
-        id: user.id,
-        email: user.email ?? null,
-      }
-    ])
-
-  console.log("UPSERT PROFILE RESULT:", { data, error })
-
-  return { data, error }
-}
-
+/**
+ * Optimized role fetching.
+ * We only use the user_roles table as the source of truth.
+ */
 export async function fetchUserRole(userId: string) {
   const supabase = getSupabaseAuthClient()
+
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .single()
-  
+    .maybeSingle()
+
   if (error || !data) {
+    console.warn("No role found for user:", userId)
     return null
   }
   return data.role
 }
 
-export async function setUserRole(userId: string, role: string) {
+/**
+ * Simplified role assignment using upsert.
+ * Removes dependency on a separate 'profiles' table.
+ */
+export async function setUserRole(userId: string, role: string, platformName?: string) {
   const supabase = getSupabaseAuthClient()
   
-  // Check if role already exists to prevent duplicates
-  const { data: existing, error: checkError } = await supabase
+  const { data, error } = await supabase
     .from("user_roles")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle()
+    .upsert({ 
+      user_id: userId, 
+      role: role, 
+      platform_name: platformName 
+    }, { 
+      onConflict: 'user_id' 
+    })
 
-  if (checkError && checkError.code !== "PGRST116") {
-    return { data: null, error: checkError }
-  }
-
-  // If role doesn't exist, insert it
-  if (!existing) {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .insert([{ user_id: userId, role: role }])
-    return { data, error }
-  }
-
-  // If role exists but different, update it
-  if (existing && existing.role !== role) {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .update({ role: role })
-      .eq("user_id", userId)
-    return { data, error }
-  }
-
-  // Role already set correctly
-  return { data: existing, error: null }
+  return { data, error }
 }
-
-

@@ -4,451 +4,204 @@ import { useEffect, useMemo, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ScrollText, FileText, Sparkles, Send, Loader2, Download, AlertCircle, CheckCircle2 } from "lucide-react"
+import { toast } from "sonner"
 import { jsPDF } from "jspdf"
 
-type LogItem = {
-  platform: string
-  city?: string
-  hours_per_day?: number
-  monthly_earnings?: number
-  calculated_deficit?: number
-  created_at?: string
-}
-
-type PlatformSummary = {
-  platform: string
-  workerCount: number
-  avgDeficit: number
-  avgEarnings: number
-  compliance: string
-}
-
-export default function ImpactPage() {
-  const [logs, setLogs] = useState<LogItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [targetWage, setTargetWage] = useState(93)
+export default function PolicyGeneratorPage() {
+  const [loading, setLoading] = useState(false)
+  const [policyObjective, setPolicyObjective] = useState("")
+  const [draftedPolicy, setDraftedPolicy] = useState("")
+  const [stats, setStats] = useState({ totalGrievances: 0, topIssue: "N/A", avgDeficit: 0 })
 
   useEffect(() => {
-    async function load() {
-      const { data, error } = await supabase
-        .from("earnings_logs")
-        .select("platform, city, hours_per_day, monthly_earnings, calculated_deficit, created_at")
-
-      if (error) {
-        console.error("Failed to load earnings logs", error)
-        setLoading(false)
-        return
-      }
-
-      setLogs((data as LogItem[]) || [])
-      setLoading(false)
+    async function loadStats() {
+      const { count } = await supabase.from('grievances').select('*', { count: 'exact', head: true })
+      const { data: logs } = await supabase.from('earnings_logs').select('calculated_deficit')
+      
+      const avg = logs && logs.length > 0 
+        ? logs.reduce((acc, l) => acc + (l.calculated_deficit || 0), 0) / logs.length 
+        : 0
+        
+      setStats({
+        totalGrievances: count || 0,
+        topIssue: "Wage Theft / Algorithmic Deviation",
+        avgDeficit: Math.round(avg)
+      })
     }
-
-    load()
+    loadStats()
   }, [])
 
-  const totalReports = logs.length
-  const totalDeficit = useMemo(
-    () => logs.reduce((sum, item) => sum + (item.calculated_deficit ?? 0), 0),
-    [logs]
-  )
+  const handleGenerate = async () => {
+    if (!policyObjective.trim()) {
+      toast.error("Please enter a policy objective (e.g. 'Mandatory Accident Insurance')")
+      return
+    }
 
-  const groupByPlatform = useMemo(() => {
-    const map: Record<string, { count: number; totalDeficit: number; totalEarnings: number }> = {}
-    logs.forEach((log) => {
-      const key = log.platform || "Unknown"
-      if (!map[key]) map[key] = { count: 0, totalDeficit: 0, totalEarnings: 0 }
-      map[key].count++
-      map[key].totalDeficit += log.calculated_deficit ?? 0
-      map[key].totalEarnings += log.monthly_earnings ?? 0
-    })
-    return Object.entries(map).map(([platform, v]) => ({
-      platform,
-      workerCount: v.count,
-      avgDeficit: v.count ? v.totalDeficit / v.count : 0,
-      avgEarnings: v.count ? v.totalEarnings / v.count : 0,
-      compliance: v.count
-        ? ((v.totalDeficit / (v.totalEarnings || 1)) * 100 < 10 ? "Compliant" : (v.totalDeficit / (v.totalEarnings || 1)) * 100 < 25 ? "Partially" : "Non-Compliant")
-        : "Unknown",
-    }))
-  }, [logs])
+    setLoading(true)
+    try {
+      const res = await fetch("/api/policy-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          objective: policyObjective,
+          context: `Current system shows ${stats.totalGrievances} complaints with an average wage deficit of ₹${stats.avgDeficit}.`
+        })
+      })
 
-  const mostExploitative = useMemo(() => {
-    if (!groupByPlatform.length) return "N/A"
-    return groupByPlatform
-      .slice()
-      .sort((a, b) => b.avgDeficit - a.avgDeficit)[0].platform
-  }, [groupByPlatform])
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to generate policy")
 
-  const insights = useMemo(() => {
-    if (!logs.length) return "No insights available yet."
-
-    const platformCityStats: Record<string, { totalDeficit: number; totalEarnings: number; count: number }> = {}
-    logs.forEach((log) => {
-      const platform = log.platform || "Unknown"
-      const city = (log.city || "Unknown").trim()
-      const key = `${platform}||${city}`
-      if (!platformCityStats[key]) platformCityStats[key] = { totalDeficit: 0, totalEarnings: 0, count: 0 }
-      platformCityStats[key].totalDeficit += Number(log.calculated_deficit) || 0
-      platformCityStats[key].totalEarnings += Number(log.monthly_earnings) || 0
-      platformCityStats[key].count += 1
-    })
-    const entries = Object.entries(platformCityStats).map(([key, value]) => {
-      const [platform, city] = key.split("||")
-      const avgDeficitPercent = value.totalEarnings ? (value.totalDeficit / value.totalEarnings) * 100 : 0
-      return { platform, city, avgDeficitPercent }
-    })
-    const top = entries.sort((a, b) => b.avgDeficitPercent - a.avgDeficitPercent)[0]
-    if (!top) return "No insights available yet."
-    return `${top.platform} shows highest exploitation (${top.avgDeficitPercent.toFixed(1)}%) in ${top.city}`
-  }, [logs])
-
-  const platformTrend = useMemo(() => {
-    const trendMap: Record<string, "improving" | "worsening" | "stable"> = {}
-
-    const byPlatform = logs.reduce((acc, log) => {
-      const platform = log.platform || "Unknown"
-      if (!acc[platform]) acc[platform] = []
-      if (log.created_at) acc[platform].push(log)
-      return acc
-    }, {} as Record<string, LogItem[]>)
-
-    Object.entries(byPlatform).forEach(([platform, items]) => {
-      items.sort((a, b) => Number(new Date(b.created_at || "")) - Number(new Date(a.created_at || "")))
-      if (items.length < 2) {
-        trendMap[platform] = "stable"
-      } else {
-        const latestDeficit = Number(items[0].calculated_deficit) || 0
-        const previousDeficit = Number(items[1].calculated_deficit) || 0
-        trendMap[platform] = latestDeficit > previousDeficit ? "worsening" : latestDeficit < previousDeficit ? "improving" : "stable"
+      setDraftedPolicy(data.policy)
+      toast.success("Legislative draft generated!")
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || "AI Service currently unavailable")
+      // Mock for demo if GROQ key is missing
+      if (err.message.includes("GROQ_API_KEY")) {
+        setDraftedPolicy("# MOCK REGULATION: Gig Worker Protection Act\n\n## 1. Title\nStandardized Social Security for On-Demand Workers\n\n## 2. Preamble\nRecognizing the growing reliance on gig platforms, the Government of Telangana hereby mandates standardized insurance for all active workers.\n\n## 3. Provisions\n- Platforms must contribute 2% of transaction value to the Welfare Fund.\n- Mandatory Accident Insurance of ₹5,00,000 for every active partner.\n- One-tap grievance escalation to the Labor Commissioner.")
       }
-    })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    return trendMap
-  }, [logs])
-
-  const avgWeeklyHours = useMemo(() => {
-    const hours = logs.reduce((sum, item) => sum + (item.hours_per_day ?? 0), 0)
-    return logs.length ? (hours / logs.length) * 7 : 40
-  }, [logs])
-
-  const additionalMonthlyIncome = ((targetWage - 93) * avgWeeklyHours * 26) / 12
-  const totalAnnualGain = (targetWage - 93) * avgWeeklyHours * 26 * totalReports
-  const totalAnnualGainCrore = (totalAnnualGain / 10000000).toFixed(2)
-  const taxGainCrore = ((totalAnnualGain * 0.12) / 10000000).toFixed(2)
-
-  const createPDF = () => {
-    const doc = new jsPDF();
-    const primaryColor = [63, 229, 108]; // #3fe56c
-    const secondaryColor = [28, 27, 27]; // #1c1b1b
-    const textColor = [20, 20, 20];
-    const lightTextColor = [100, 100, 100];
-
-    // --- PAGE 1: COVER PAGE ---
-    // Background accent
-    doc.setFillColor(245, 245, 245);
-    doc.rect(0, 0, 210, 297, "F");
+  const downloadPDF = () => {
+    const doc = new jsPDF()
+    doc.setFontSize(20)
+    doc.text("Government of Telangana: Policy Draft", 20, 20)
+    doc.setFontSize(10)
+    doc.text(`Generated via GigShield Intelligence on ${new Date().toLocaleDateString()}`, 20, 30)
     
-    // Header Strip
-    doc.setFillColor(0, 0, 0);
-    doc.rect(0, 0, 210, 40, "F");
-    
-    // Logo / Brand
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.text("GigShield", 20, 25);
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text(".", 62, 25);
-    
-    // Title
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(32);
-    doc.text("Gig Economy", 20, 80);
-    doc.text("Exploitation &", 20, 95);
-    doc.text("Impact Report", 20, 110);
-    
-    // Decorative line
-    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setLineWidth(2);
-    doc.line(20, 120, 60, 120);
-    
-    // Scope Info
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 140);
-    doc.text(`Scope: Aggregate Worker Reports (N=${totalReports})`, 20, 148);
-    doc.text("Territory: India (Regional Data Samples)", 20, 156);
-    
-    // Footer Credit
-    doc.setFontSize(10);
-    doc.text("CONFIDENTIAL | FOR POLICY & ADVOCACY USE ONLY", 20, 280);
-
-    // --- PAGE 2: EXECUTIVE SUMMARY ---
-    doc.addPage();
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 15, "F");
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("1. Executive Summary", 14, 30);
-    
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    const summaryText = "This report details systemic wage underpayment and algorithmic exploitation within major gig commerce platforms. Based on verified worker-submitted logs, we have detected consistent deviations from standard fair-pay benchmarks.";
-    doc.text(doc.splitTextToSize(summaryText, 180), 14, 40);
-
-    // Key Metrics Box
-    doc.setFillColor(240, 240, 240);
-    doc.rect(14, 55, 182, 45, "F");
-    doc.setDrawColor(220, 220, 220);
-    doc.rect(14, 55, 182, 45, "S");
-    
-    doc.setFontSize(10);
-    doc.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
-    doc.text("TOTAL UNDERPAID WAGES DETECTED", 20, 65);
-    doc.text("TOTAL WORKER REPORTS", 110, 65);
-    doc.text("CRITICAL INSIGHT", 20, 85);
-    
-    doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`INR ${totalDeficit.toLocaleString()}`, 20, 75);
-    doc.text(`${totalReports} entries`, 110, 75);
-    doc.setFontSize(11);
-    doc.text(insights, 20, 93);
-
-    // Platform Audit Table
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("2. Platform Compliance Audit", 14, 120);
-    
-    let y = 135;
-    // Table Header
-    doc.setFillColor(0, 0, 0);
-    doc.rect(14, y, 182, 10, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text("PLATFORM", 18, y + 6);
-    doc.text("REPORTS", 60, y + 6);
-    doc.text("AVG DEFICIT", 90, y + 6);
-    doc.text("COMPLIANCE STATE", 130, y + 6);
-    
-    y += 10;
-    groupByPlatform.forEach((p, i) => {
-      doc.setTextColor(0, 0, 0);
-      if (i % 2 === 0) {
-        doc.setFillColor(248, 248, 248);
-        doc.rect(14, y, 182, 10, "F");
-      }
-      doc.text(p.platform, 18, y + 6);
-      doc.text(p.workerCount.toString(), 60, y + 6);
-      doc.text(`INR ${p.avgDeficit.toFixed(0)}`, 90, y + 6);
-      
-      if (p.compliance === "Compliant") doc.setTextColor(0, 150, 0);
-      else if (p.compliance === "Partially") doc.setTextColor(150, 150, 0);
-      else doc.setTextColor(200, 0, 0);
-      
-      doc.text(p.compliance, 130, y + 6);
-      y += 10;
-    });
-
-    // --- PAGE 3: ECONOMIC IMPACT ---
-    doc.addPage();
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(0, 0, 210, 15, "F");
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("3. Economic Impact Projection", 14, 30);
-    
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    const econText = `If the hourly minimum wage is standardized at INR ${targetWage}/hr (Telangana Gig Worker Act baseline), the following economic shifts are projected locally:`;
-    doc.text(doc.splitTextToSize(econText, 180), 14, 40);
-
-    // Impact Grid
-    doc.rect(14, 55, 50, 30, "S");
-    doc.text("Monthly Increase / Worker", 18, 65, { maxWidth: 40 });
-    doc.setFont("helvetica", "bold");
-    doc.text(`INR ${additionalMonthlyIncome.toFixed(0)}`, 18, 78);
-    
-    doc.setFont("helvetica", "normal");
-    doc.rect(74, 55, 50, 30, "S");
-    doc.text("Total Annual GDP Gain", 78, 65, { maxWidth: 40 });
-    doc.setFont("helvetica", "bold");
-    doc.text(`INR ${totalAnnualGainCrore} Cr`, 78, 78);
-    
-    doc.setFont("helvetica", "normal");
-    doc.rect(134, 55, 50, 30, "S");
-    doc.text("Estimated Tax Revenue", 138, 65, { maxWidth: 40 });
-    doc.setFont("helvetica", "bold");
-    doc.text(`INR ${taxGainCrore} Cr`, 138, 78);
-
-    // Policy Recommendations
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("4. Policy Recommendations", 14, 110);
-    
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    const recommendations = [
-      "• Algorithmic Transparency: Implement mandatory audits for payout logic.",
-      "• Minimum Earnings Guarantee: Standardize a base rate of INR 93/hr + fuel overhead.",
-      "• Social Security Pool: Platforms to contribute 2% of revenue to state-managed insurance.",
-      "• Grievance Redressal: Independent verification of worker deactivations and disputes."
-    ];
-    
-    let recY = 120;
-    recommendations.forEach(rec => {
-      doc.text(doc.splitTextToSize(rec, 170), 20, recY);
-      recY += 12;
-    });
-
-    doc.save(`GigShield_Intelligence_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
-
-  const copySummary = () => {
-    const text = `Total reports: ${totalReports}\nTotal underpaid deficit: ₹${totalDeficit.toFixed(0)}\nMost exploitative platform: ${mostExploitative}`
-    navigator.clipboard.writeText(text)
+    const splitText = doc.splitTextToSize(draftedPolicy, 180)
+    doc.text(splitText, 20, 45)
+    doc.save("GigShield_Policy_Draft.pdf")
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-white p-4 sm:p-6 lg:p-10 pb-28">
-      <div className="space-y-6 max-w-6xl mx-auto">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-black">GigShield Intelligence Report</h1>
-          <p className="text-neutral-300">Anonymous aggregate data for policy decisions</p>
+    <div className="min-h-screen bg-[#0e0e0e] text-white p-5 md:p-10 pb-28 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="max-w-5xl mx-auto space-y-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-neutral-800 pb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-[#4d0091]/30 p-2 rounded-lg border border-[#a855f7]/20">
+                <Sparkles className="w-5 h-5 text-[#a855f7]" />
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-white uppercase">
+                AI Policy Drafter
+              </h1>
+            </div>
+            <p className="text-neutral-400 text-sm md:text-base max-w-xl pl-12 italic">
+              Empowering regulators with data-driven legislative drafting tools.
+            </p>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="text-center text-neutral-300">Loading data...</div>
-        ) : !logs.length ? (
-          <div className="text-center text-neutral-300">No data yet — be the first contributor</div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-[#1c1b1b] border border-neutral-800">
-                <CardContent>
-                  <CardTitle className="text-sm text-neutral-300">Total Reports</CardTitle>
-                  <p className="text-3xl font-bold text-white">{totalReports}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-[#1c1b1b] border border-neutral-800">
-                <CardContent>
-                  <CardTitle className="text-sm text-neutral-300">Total Underpaid Wages</CardTitle>
-                  <p className="text-3xl font-bold text-white">₹{totalDeficit.toFixed(0)}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-[#1c1b1b] border border-neutral-800">
-                <CardContent>
-                  <CardTitle className="text-sm text-neutral-300">Most Exploitative</CardTitle>
-                  <p className="text-2xl font-bold text-white">{mostExploitative}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-[#1c1b1b] border border-neutral-800">
-                <CardContent>
-                  <CardTitle className="text-sm text-neutral-300">Cities Covered</CardTitle>
-                  <p className="text-2xl font-bold text-white">{new Set(logs.map((item) => (item as any).city)).size || 0}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="bg-[#1c1b1b] border border-neutral-800 rounded-lg p-4">
-              <p className="text-sm text-neutral-200 font-semibold">Key Insight</p>
-              <p className="text-white mt-1">{insights}</p>
-            </div>
-
-            <Card className="bg-[#1c1b1b] border border-neutral-800">
-              <CardHeader className="p-5">
-                <CardTitle className="text-xl font-bold text-white">What if minimum wage increases?</CardTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="bg-[#131212] border-neutral-800 rounded-2xl overflow-hidden relative">
+              <CardHeader className="bg-[#1c1b1b]/50 border-b border-neutral-800/50">
+                 <CardTitle className="text-xs font-black text-neutral-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                   <AlertCircle className="w-4 h-4 text-[#ff7162]" /> 
+                   System Intelligence
+                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-5 space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-white">Set target wage: ₹{targetWage}</span>
-                  <input
-                    type="range"
-                    min={93}
-                    max={120}
-                    value={targetWage}
-                    onChange={(e) => setTargetWage(Number(e.target.value))}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-300">Additional monthly income / worker</p>
-                    <p className="text-xl font-bold text-white">₹{additionalMonthlyIncome.toFixed(0)}</p>
-                  </div>
-                  <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-300">Total annual increase</p>
-                    <p className="text-xl font-bold text-white">₹{totalAnnualGainCrore} Cr</p>
-                  </div>
-                  <div className="bg-[#131313] p-3 rounded-lg">
-                    <p className="text-xs text-neutral-300">Estimated tax revenue</p>
-                    <p className="text-xl font-bold text-white">₹{taxGainCrore} Cr</p>
-                  </div>
-                </div>
+              <CardContent className="p-6 space-y-6">
+                 <div>
+                   <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Unresolved Grievances</p>
+                   <p className="text-3xl font-black text-white">{stats.totalGrievances}</p>
+                 </div>
+                 <div>
+                   <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Weighted Wage Deficit</p>
+                   <p className="text-3xl font-black text-white">₹{stats.avgDeficit}<span className="text-sm font-normal text-neutral-500">/hr</span></p>
+                 </div>
+                 <div className="pt-4 border-t border-neutral-800/50">
+                   <div className="bg-[#1c1b1b] rounded-lg p-3 border border-neutral-800 flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#3fe56c] shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-neutral-400 leading-relaxed font-medium">Ready for Legislative Processing based on current violation trends.</p>
+                   </div>
+                 </div>
               </CardContent>
             </Card>
-
-            <Card className="bg-[#1c1b1b] border border-neutral-800">
-              <CardHeader className="p-5">
-                <CardTitle className="text-xl font-bold text-white">Platform Compliance Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="p-5 overflow-x-auto">
-                <table className="w-full text-left text-sm border-separate border-spacing-y-2">
-                  <thead className="text-neutral-400 uppercase text-[10px] font-black tracking-widest">
-                    <tr>
-                      <th className="px-4 py-2">Platform</th>
-                      <th className="px-4 py-2">Worker count</th>
-                      <th className="px-4 py-2">Avg deficit</th>
-                      <th className="px-4 py-2 text-center">Compliance</th>
-                      <th className="px-4 py-2 text-right">Trend</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupByPlatform.map((p) => (
-                      <tr key={p.platform} className="bg-neutral-900/30 hover:bg-neutral-900/60 transition-colors group">
-                        <td className="px-4 py-4 rounded-l-xl font-bold text-white group-hover:text-[#3fe56c] transition-colors">{p.platform}</td>
-                        <td className="px-4 py-4 text-neutral-200">{p.workerCount}</td>
-                        <td className="px-4 py-4 font-medium text-neutral-100 italic">₹{p.avgDeficit.toFixed(0)}</td>
-                        <td className="px-4 py-4 text-center">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                            p.compliance === "Compliant" 
-                              ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-                              : p.compliance === "Partially"
-                              ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
-                              : "bg-red-500/10 text-red-500 border border-red-500/20"
-                          }`}>
-                            {p.compliance}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-right rounded-r-xl font-bold text-neutral-300">
-                          {platformTrend[p.platform] === "improving" ? (
-                            <span className="text-green-500">↑ improving</span>
-                          ) : platformTrend[p.platform] === "worsening" ? (
-                            <span className="text-red-500">↓ worsening</span>
-                          ) : (
-                            <span className="text-neutral-500">→ stable</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button onClick={createPDF} className="bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">Download Full Intelligence Report</Button>
-              <Button onClick={copySummary} className="border border-neutral-700">Share with Policy Makers</Button>
+            
+            <div className="bg-[#1c1b1b] border border-neutral-800 p-6 rounded-2xl space-y-4">
+              <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest">Drafting Goal</h3>
+              <textarea 
+                placeholder="e.g. Standardize 2% Revenue Sharing for Worker Welfare Fund..."
+                className="w-full bg-[#131212] border border-neutral-800 rounded-xl p-4 text-sm text-neutral-200 min-h-[120px] focus:outline-none focus:border-[#a855f7] transition-all"
+                value={policyObjective}
+                onChange={(e) => setPolicyObjective(e.target.value)}
+              />
+              <button 
+                onClick={handleGenerate}
+                disabled={loading}
+                className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+                {loading ? "Analyzing..." : "Draft Protocol"}
+              </button>
             </div>
-          </>
-        )}
+          </div>
+
+          <div className="lg:col-span-2">
+            <div className="bg-[#131212] border border-neutral-800 rounded-3xl h-full min-h-[500px] flex flex-col relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-5">
+                 <ScrollText className="w-64 h-64" />
+               </div>
+               
+               <div className="p-8 border-b border-neutral-800/50 flex justify-between items-center z-10 relative bg-[#1c1b1b]/30">
+                  <h3 className="text-sm font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[#a855f7]" /> Legislative Workspace
+                  </h3>
+                  {draftedPolicy && (
+                    <button 
+                      onClick={downloadPDF}
+                      className="text-[10px] font-black uppercase text-white bg-[#1c1b1b] border border-neutral-700 px-3 py-1.5 rounded-lg hover:border-white transition-all flex items-center gap-2"
+                    >
+                      <Download className="w-3 h-3" /> Export Draft
+                    </button>
+                  )}
+               </div>
+
+               <div className="flex-1 p-8 md:p-12 z-10 relative overflow-y-auto max-h-[600px] scrollbar-hide">
+                  {!draftedPolicy && !loading && (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+                      <div className="bg-neutral-800 p-4 rounded-full">
+                        <Sparkles className="w-8 h-8 text-neutral-500" />
+                      </div>
+                      <p className="text-sm text-neutral-500 max-w-xs font-medium">Input your legislative objective to generate a data-backed policy draft.</p>
+                    </div>
+                  )}
+
+                  {loading && (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
+                       <div className="relative">
+                         <div className="w-16 h-16 border-4 border-[#a855f7]/20 border-t-[#a855f7] rounded-full animate-spin"></div>
+                         <Sparkles className="w-6 h-6 text-[#a855f7] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                       </div>
+                       <div className="space-y-1">
+                         <p className="text-sm font-black uppercase tracking-widest">Aggregating Global Trends</p>
+                         <p className="text-xs text-neutral-500">Cross-referencing {stats.totalGrievances} grievances...</p>
+                       </div>
+                    </div>
+                  )}
+
+                  {draftedPolicy && !loading && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                      <pre className="text-neutral-200 text-sm font-sans leading-relaxed whitespace-pre-wrap selection:bg-[#a855f7]/30">
+                        {draftedPolicy}
+                      </pre>
+                    </div>
+                  )}
+               </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   )

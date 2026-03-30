@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState } from "react"
 
 type LanguageContextType = {
   language: string
@@ -10,14 +10,11 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState("en")
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    const saved = localStorage.getItem("gigshield-lang")
-    if (saved) setLanguageState(saved)
-  }, [])
+  const [language, setLanguageState] = useState(() => {
+    if (typeof window === "undefined") return "en"
+    return localStorage.getItem("gigshield-lang") || "en"
+  })
+  const [mounted] = useState(typeof window !== "undefined")
 
   const setLanguage = (lang: string) => {
     setLanguageState(lang)

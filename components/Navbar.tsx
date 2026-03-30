@@ -7,52 +7,49 @@ import { ShieldCheck } from "lucide-react"
 
 export default function Navbar() {
   const pathname = usePathname()
-  const { user, role, openAuthModal, signOut, mounted } = useAuth()
-
-  // Deployment tracer
-  console.log("GigShield Version: v4.0.0");
+  const { user, role, mounted, signOut } = useAuth()
 
   const publicLinks = [
-    { name: "Compare Platforms", href: "/compare" },
+    { name: "Home", href: "/" },
     { name: "Check My Pay", href: "/checker" },
-    { name: "Worker Rights", href: "/worker-rights" },
     { name: "Exploitation Index", href: "/leaderboard" },
-    { name: "Impact", href: "/impact" },
   ]
-
   const workerLinks = [
-    { name: "Marketplace", href: "/worker" },
+    { name: "Home", href: "/worker" },
+    { name: "Marketplace", href: "/worker/marketplace" },
     { name: "Check My Pay", href: "/worker/checker" },
-    { name: "File Grievance", href: "/worker/grievance" },
     { name: "My Rights", href: "/worker/rights" },
-    { name: "Exploitation Index", href: "/worker/exploitation" },
   ]
-
   const platformLinks = [
-    { name: "Dashboard", href: "/platform" },
-    { name: "Competitor Intel", href: "/platform/competitors" },
-    { name: "Self-Audit", href: "/platform/audit" },
-    { name: "Worker Trends", href: "/platform/trends" },
+    { name: "Home", href: "/platform" },
+    { name: "Audit", href: "/platform/audit" },
+    { name: "Competitors", href: "/platform/competitors" },
+    { name: "Trends", href: "/platform/trends" },
   ]
-
-  const govtLinks = [
-    { name: "Metrics", href: "/govt" },
-    { name: "Worker Data", href: "/govt/workers" },
+  const governmentLinks = [
+    { name: "Command Center", href: "/govt" },
     { name: "Complaints", href: "/govt/complaints" },
     { name: "Compliance", href: "/govt/compliance" },
-    { name: "Policy Report", href: "/govt/policy" },
+    { name: "Policy", href: "/govt/policy" },
   ]
 
-  let navLinks = publicLinks
-  if (role === 'worker') navLinks = workerLinks
-  if (role === 'platform') navLinks = platformLinks
-  if (role === 'government') navLinks = govtLinks
+  const navLinks = !user
+    ? publicLinks
+    : role === "worker"
+      ? workerLinks
+      : role === "platform"
+        ? platformLinks
+        : governmentLinks
+
+  const handleLogout = async () => {
+    await signOut()
+  }
 
   return (
     <nav className="bg-[#0e0e0e]/90 backdrop-blur-md border-b border-neutral-800 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6 h-16">
-        <Link href="/" className="group flex items-center gap-2.5 transition-opacity hover:opacity-90">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#3fe56c] to-[#00c853] shadow-[0_0_15px_rgba(63,229,108,0.3)] group-hover:shadow-[0_0_20px_rgba(63,229,108,0.5)] transition-all">
+        <Link href={!user ? "/" : role === "worker" ? "/worker" : role === "platform" ? "/platform" : (role === "govt" || role === "government") ? "/govt" : "/"} className="group flex items-center gap-2.5 transition-opacity hover:opacity-90">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#3fe56c] to-[#00c853] shadow-[0_0_15px_rgba(63,229,108,0.3)] group-hover:shadow-[0_0_20px_rgba(63,229,108,0.5)] transition-all">
             <ShieldCheck className="h-6 w-6 text-black fill-black/10" />
             <div className="absolute inset-0 rounded-xl border border-white/20" />
           </div>
@@ -83,33 +80,40 @@ export default function Navbar() {
               <>
                 {user ? (
                   <button
-                    onClick={signOut}
+                    onClick={handleLogout}
                     className="mr-3 px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors"
                   >
-                    Sign out
+                    Logout
                   </button>
                 ) : (
-                  <button
-                    onClick={openAuthModal}
-                    className="mr-3 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#3fe56c] text-black hover:bg-[#37cf61] transition-colors"
-                  >
-                    Verify
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Link href="/login" className="px-3 py-1.5 text-xs font-bold rounded-lg border border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors">
+                      Login
+                    </Link>
+                    <Link href="/register" className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#3fe56c] text-black hover:bg-[#37cf61] transition-colors">
+                      Register
+                    </Link>
+                  </div>
                 )}
               </>
             )}
           </div>
         </div>
         
-        {/* Mobile menu toggle goes here */}
         <div className="md:hidden flex items-center">
-          {mounted && !user && (
-            <button
-              onClick={openAuthModal}
-              className="mr-2 px-2.5 py-1 text-[11px] font-bold rounded-md bg-[#3fe56c] text-black"
-            >
-              Verify
+          {mounted && user ? (
+            <button onClick={handleLogout} className="mr-2 px-2.5 py-1 text-[11px] font-bold rounded-md border border-neutral-700 text-neutral-300">
+              Logout
             </button>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <Link href="/login" className="px-2 py-1 text-[11px] font-bold rounded-md border border-neutral-700 text-neutral-300">
+                Login
+              </Link>
+              <Link href="/register" className="px-2 py-1 text-[11px] font-bold rounded-md bg-[#3fe56c] text-black">
+                Register
+              </Link>
+            </div>
           )}
         </div>
       </div>

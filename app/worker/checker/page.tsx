@@ -3,13 +3,12 @@
 import { useState } from "react"
 import { CalculationResult } from "@/lib/calculator"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
-import { AlertCircle, CheckCircle2, Languages, Loader2, Share2, ShieldAlert, Calculator } from "lucide-react"
+import { AlertCircle, CheckCircle2, Loader2, Share2, ShieldAlert, Calculator } from "lucide-react"
 import ExploitationGauge from "@/components/ExploitationGauge"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
@@ -118,8 +117,9 @@ export default function CheckerPage() {
 
       fetchRights(data.result)
 
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to calculate"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -143,7 +143,7 @@ export default function CheckerPage() {
       if (!res.ok) throw new Error(data.error || "Failed to fetch rights")
       
       setRightsText(data.rights)
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to load your rights context.")
     } finally {
       setIsLoadingRights(false)
@@ -200,7 +200,7 @@ export default function CheckerPage() {
       
       setReportSubmitted(true)
       toast.success("Report submitted. Thank you.")
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to submit report")
     } finally {
       setIsSubmittingReport(false)
@@ -305,7 +305,7 @@ export default function CheckerPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full h-16 mt-8 rounded-xl bg-gradient-to-br from-[#3fe56c] to-[#00c853] hover:brightness-110 text-[#002108] font-extrabold text-lg transition-all active:scale-[0.98] shadow-[0_0_30px_rgba(0,200,83,0.3)]" disabled={isLoading}>
+              <Button type="submit" className="w-full h-16 mt-8 rounded-xl bg-linear-to-br from-[#3fe56c] to-[#00c853] hover:brightness-110 text-[#002108] font-extrabold text-lg transition-all active:scale-[0.98] shadow-[0_0_30px_rgba(0,200,83,0.3)]" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : null}
                 {isLoading ? 'Calculating...' : t.checkBtn}
               </Button>
@@ -328,11 +328,11 @@ export default function CheckerPage() {
             {/* GIANT STATS CARD */}
             <div className={`relative overflow-hidden rounded-[32px] p-8 md:p-12 border ${
               isUnderpaid 
-                ? "bg-gradient-to-br from-[#2a1313] to-[#1c1b1b] border-[#ff4c4c]/30 shadow-[0_0_50px_rgba(255,76,76,0.15)]" 
-                : "bg-gradient-to-br from-[#0c2a15] to-[#1c1b1b] border-[#3ce36a]/30 shadow-[0_0_50px_rgba(60,227,106,0.15)]"
+                ? "bg-linear-to-br from-[#2a1313] to-[#1c1b1b] border-[#ff4c4c]/30 shadow-[0_0_50px_rgba(255,76,76,0.15)]" 
+                : "bg-linear-to-br from-[#0c2a15] to-[#1c1b1b] border-[#3ce36a]/30 shadow-[0_0_50px_rgba(60,227,106,0.15)]"
             }`}>
               
-              <div className="absolute top-0 left-0 w-full h-1 opacity-50 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: isUnderpaid ? '#ff7162' : '#3ce36a' }}></div>
+              <div className="absolute top-0 left-0 w-full h-1 opacity-50 bg-linear-to-r from-transparent via-current to-transparent" style={{ color: isUnderpaid ? '#ff7162' : '#3ce36a' }}></div>
 
               <div className="text-center relative z-10 space-y-3">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-widest uppercase mb-4 ${
@@ -419,9 +419,21 @@ export default function CheckerPage() {
                   </div>
                 ) : (
                   <div className="text-neutral-200 font-medium leading-relaxed max-w-none text-base">
-                    <p className="whitespace-pre-wrap">
-                      {rightsText || "Rights information unavailable."}
-                    </p>
+                    {rightsText ? (
+                      <details className="group border border-neutral-800 rounded-xl bg-[#131313] overflow-hidden">
+                        <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors list-none font-bold text-lg border-b border-transparent group-open:border-neutral-800">
+                          <span>View Your Legal Rights Detailed Breakdown</span>
+                          <span className="text-neutral-500 group-open:rotate-180 transition-transform duration-300">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                          </span>
+                        </summary>
+                        <div className="p-5 bg-[#0e0e0e] text-neutral-300 text-sm whitespace-pre-wrap leading-relaxed">
+                          {rightsText}
+                        </div>
+                      </details>
+                    ) : (
+                      "Rights information unavailable."
+                    )}
                   </div>
                 )}
               </CardContent>

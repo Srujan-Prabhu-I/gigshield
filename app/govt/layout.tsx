@@ -14,12 +14,12 @@ export default function GovtLayout({
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && (!user || role !== "govt")) {
+    if (!loading && (!user || (role !== "government" && role !== "govt"))) {
       router.push("/")
     }
   }, [user, role, loading, router])
 
-  if (loading || !user || role !== "govt") {
+  if (loading || !user || (role !== "government" && role !== "govt")) {
     return (
       <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#3fe56c] animate-spin" />

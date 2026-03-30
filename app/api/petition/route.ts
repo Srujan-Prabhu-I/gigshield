@@ -73,10 +73,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ letter })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to generate complaint letter"
     console.error("Petition API error:", error)
     return NextResponse.json(
-      { error: error.message || "Failed to generate complaint letter" },
+      { error: message },
       { status: 500 }
     )
   }

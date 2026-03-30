@@ -1,35 +1,87 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Users, FileWarning, TrendingDown, Building2, ChevronRight, ScrollText, Clock, Loader2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 export default function GovtDashboard() {
   const { user, role, loading } = useAuth()
   const router = useRouter()
 
+  const [workerCount, setWorkerCount] = useState(0)
+  const [complaintCount, setComplaintCount] = useState(0)
+  const [totalDeficit, setTotalDeficit] = useState(0)
+  const [recentGrievances, setRecentGrievances] = useState<any[]>([])
+  const [watchlist, setWatchlist] = useState<any[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+
   useEffect(() => {
-    if (!loading && (!user || role !== "govt")) {
+    if (!loading && (!user || (role !== "govt" && role !== "government"))) {
       router.push("/")
     }
   }, [user, role, loading, router])
 
-  if (loading || !user || role !== "govt") {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setDataLoading(true)
+        
+        // Parallel fetch for dashboard metrics
+        const [
+          { count: wCount },
+          { count: cCount, data: grievances },
+          { data: logs },
+          { data: platforms }
+        ] = await Promise.all([
+          supabase.from("user_roles").select("*", { count: "exact", head: true }).eq("role", "worker"),
+          supabase.from("grievances").select("id, platform, created_at, pdf_url", { count: "exact" }).order("created_at", { ascending: false }).limit(5),
+          supabase.from("earnings_logs").select("calculated_deficit"),
+          supabase.from("platform_profiles").select("platform_name, compliance_score").order("compliance_score", { ascending: true }).limit(3)
+        ])
+
+        if (wCount !== null) setWorkerCount(wCount)
+        
+        if (cCount !== null) setComplaintCount(cCount)
+        if (grievances) setRecentGrievances(grievances)
+        
+        if (logs) {
+          const total = logs.reduce((acc, log) => acc + (log.calculated_deficit || 0), 0)
+          setTotalDeficit(total)
+        }
+        
+        if (platforms) {
+          const mappedWatchlist = platforms.map(p => {
+             let risk = "MODERATE"
+             const score = p.compliance_score || 0
+             if(score < 40) risk = "CRITICAL"
+             else if(score < 60) risk = "HIGH"
+             return { name: p.platform_name, score: score, risk, trend: "Requires Action" }
+          })
+          setWatchlist(mappedWatchlist)
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch govt stats:", err)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    if (user && (role === "govt" || role === "government")) {
+      fetchData()
+    }
+  }, [user, role])
+
+  if (loading || dataLoading || !user || (role !== "govt" && role !== "government")) {
     return (
       <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#3fe56c] animate-spin" />
       </div>
     )
   }
-
-  // Mock data for government dashboard
-  const workerCount: number = 12450
-  const complaintCount: number = 342
-  const totalDeficit: number = 8500000
-  const avgExploitationScore: number = 68
-  const recentGrievances: Array<{id: string; platform_name: string; created_at: string; pdf_url?: string}> = []
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white p-5 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -47,7 +99,7 @@ export default function GovtDashboard() {
               </h1>
             </div>
             <p className="text-neutral-400 text-sm md:text-base max-w-2xl pl-12">
-              Real-time oversight of India's gig economy. Monitor platform compliance, process worker grievances, and enforce the Platform Act.
+              Real-time oversight of India&apos;s gig economy. Monitor platform compliance, process worker grievances, and enforce the Platform Act.
             </p>
           </div>
           
@@ -67,7 +119,7 @@ export default function GovtDashboard() {
               </div>
             </div>
             <p className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">Registered Workers</p>
-            <h3 className="text-3xl font-black text-white">{workerCount || 12450}</h3>
+            <h3 className="text-3xl font-black text-white">{workerCount}</h3>
           </div>
 
           <div className="bg-[#131212] border border-neutral-800 rounded-[20px] p-6">
@@ -77,7 +129,7 @@ export default function GovtDashboard() {
               </div>
             </div>
             <p className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">Formal Complaints</p>
-            <h3 className="text-3xl font-black text-white">{complaintCount || 342}</h3>
+            <h3 className="text-3xl font-black text-white">{complaintCount}</h3>
           </div>
 
           <div className="bg-[#131212] border border-neutral-800 rounded-[20px] p-6">
@@ -87,7 +139,7 @@ export default function GovtDashboard() {
               </div>
             </div>
             <p className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">Total Wage Theft Tracked</p>
-            <h3 className="text-3xl font-black text-white">₹{(totalDeficit || 12500000).toLocaleString()}</h3>
+            <h3 className="text-3xl font-black text-white">₹{totalDeficit.toLocaleString()}</h3>
           </div>
 
           <div className="bg-[#131212] border border-neutral-800 rounded-[20px] p-6">
@@ -97,7 +149,7 @@ export default function GovtDashboard() {
               </div>
             </div>
             <p className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">Non-Compliant Platforms</p>
-            <h3 className="text-3xl font-black text-[#ff7162]">3 / 12</h3>
+            <h3 className="text-3xl font-black text-[#ff7162]">{watchlist.filter(p => p.score < 50).length}</h3>
           </div>
         </div>
 
@@ -122,7 +174,7 @@ export default function GovtDashboard() {
                 recentGrievances.map((g) => (
                   <div key={g.id} className="p-5 flex items-center justify-between hover:bg-[#201f1f] transition-colors">
                     <div>
-                      <p className="text-sm font-bold text-white uppercase tracking-wider mb-1">{g.platform_name}</p>
+                      <p className="text-sm font-bold text-white uppercase tracking-wider mb-1">{g.platform}</p>
                       <p className="text-xs font-medium text-neutral-500">Filed {new Date(g.created_at).toLocaleDateString()}</p>
                     </div>
                     {g.pdf_url ? (
@@ -156,12 +208,7 @@ export default function GovtDashboard() {
               </Link>
             </div>
             <div className="p-6 grid gap-4">
-              {/* Mock Warning Cards for Dashboard Impact */}
-              {[
-                { name: "Rapido", score: 31, risk: "CRITICAL", trend: "+12% Complaints" },
-                { name: "Zepto", score: 39, risk: "HIGH", trend: "+5% Deficit" },
-                { name: "Swiggy", score: 42, risk: "MODERATE", trend: "-2% Deficit" }
-              ].map((p, i) => (
+              {watchlist.length > 0 ? watchlist.map((p, i) => (
                 <div key={i} className={`flex items-center justify-between p-4 rounded-xl border ${p.risk === 'CRITICAL' ? 'bg-[#2a0808]/50 border-[#ff7162]/30' : 'bg-[#131212] border-neutral-800'} transition-colors hover:border-neutral-600`}>
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-white">{p.name}</span>
@@ -172,7 +219,9 @@ export default function GovtDashboard() {
                     <span className="text-xl font-black text-white">{p.score}/100</span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="p-8 text-center text-neutral-500 text-sm">No platform data found.</div>
+              )}
             </div>
           </div>
 

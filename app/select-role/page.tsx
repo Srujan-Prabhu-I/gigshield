@@ -10,7 +10,6 @@ import { toast } from "sonner"
 export default function SelectRolePage() {
   const { user, role } = useAuth()
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Redirect if user not logged in
   useEffect(() => {
@@ -24,6 +23,7 @@ export default function SelectRolePage() {
     if (role) {
       if (role === "worker") router.push("/worker")
       else if (role === "platform") router.push("/platform")
+      else if (role === "government") router.push("/government")
       else if (role === "govt") router.push("/govt")
     }
   }, [role, router])
@@ -34,32 +34,29 @@ export default function SelectRolePage() {
       return
     }
 
-    setIsSubmitting(true)
-    
     try {
-      const { error } = await setUserRole(user.id, selectedRole)
+      const normalizedRole = selectedRole === "govt" ? "government" : selectedRole
+      const { error } = await setUserRole(user.id, normalizedRole)
       
       if (error) {
         console.error("Error setting role:", error)
         toast.error("Failed to set role. Please try again.")
-        setIsSubmitting(false)
         return
       }
 
       toast.success(`Role set to ${selectedRole}!`)
       
       // Redirect based on selected role
-      if (selectedRole === "worker") {
+      if (normalizedRole === "worker") {
         router.push("/worker")
-      } else if (selectedRole === "platform") {
+      } else if (normalizedRole === "platform") {
         router.push("/platform")
-      } else if (selectedRole === "govt") {
-        router.push("/govt")
+      } else if (normalizedRole === "government") {
+        router.push("/government")
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error setting role:", error)
       toast.error("An unexpected error occurred")
-      setIsSubmitting(false)
     }
   }
 
@@ -95,7 +92,7 @@ export default function SelectRolePage() {
             <div className="w-14 h-14 rounded-2xl bg-[#004c1b]/30 flex items-center justify-center mb-6 border border-[#00c853]/20 group-hover:scale-110 transition-transform">
               <User className="w-7 h-7 text-[#3fe56c]" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">I'm a Worker</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">I&apos;m a Worker</h3>
             <p className="text-neutral-400 text-sm/relaxed font-medium">
               Check your fair pay, file grievances, and understand your legal rights against exploitation.
             </p>
@@ -109,7 +106,7 @@ export default function SelectRolePage() {
             <div className="w-14 h-14 rounded-2xl bg-[#00344b]/30 flex items-center justify-center mb-6 border border-[#2fb9f9]/20 group-hover:scale-110 transition-transform">
               <Building2 className="w-7 h-7 text-[#2fb9f9]" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">I'm a Platform</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">I&apos;m a Platform</h3>
             <p className="text-neutral-400 text-sm/relaxed font-medium">
               Audit your compliance, compare competitor stats, and earn your Fair Pay Certification.
             </p>

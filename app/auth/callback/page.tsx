@@ -24,9 +24,44 @@ export default function AuthCallback() {
         }
       }
 
-      // Hard redirect ensures the new session cookie is sent with the next request
-      // so middleware can read it and route the user to the correct portal
-      window.location.href = "/select-role";
+      // If the user came through a role-specific login, persist that role
+      const intendedRole = typeof window !== "undefined" ? window.localStorage.getItem("intendedRole") : null
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          console.error("Auth exchange error:", error)
+          window.location.href = "/login"
+          return
+        }
+      }
+
+      const { data } = await supabase.auth.getUser()
+      const user = data.user
+
+      if (user && intendedRole) {
+        // write the role to database so auth, middleware and GraphQL can resolve immediately
+        try {
+          await (await import("@/lib/supabase-auth")).setUserRole(user.id, intendedRole)
+        } catch (err) {
+          console.error("Failed to persist role from callback:", err)
+        }
+      }
+
+      // Clear transient context to avoid old state interfering
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("intendedRole")
+      }
+
+      const nextPath = intendedRole === "worker"
+        ? "/worker"
+        : intendedRole === "platform"
+        ? "/platform"
+        : intendedRole === "government"
+        ? "/government"
+        : "/select-role"
+
+      window.location.href = nextPath
     };
 
     handleAuth();

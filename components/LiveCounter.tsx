@@ -7,6 +7,8 @@ interface LiveCounterProps {
   suffix?: string
 }
 
+type IndexItem = { workerCount: number }
+
 export default function LiveCounter({ label, suffix = "" }: LiveCounterProps) {
   const [count, setCount] = useState<number | null>(null)
 
@@ -16,7 +18,7 @@ export default function LiveCounter({ label, suffix = "" }: LiveCounterProps) {
         const res = await fetch("/api/exploitation")
         const json = await res.json()
         if (json.index) {
-          const total = json.index.reduce((acc: number, item: any) => acc + item.workerCount, 0)
+          const total = (json.index as IndexItem[]).reduce((acc: number, item) => acc + item.workerCount, 0)
           setCount(total)
         }
       } catch {

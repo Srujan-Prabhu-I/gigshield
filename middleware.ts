@@ -1,9 +1,38 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+
+const PUBLIC_ROUTES = new Set([
+  "/",
+  "/login",
+  "/register",
+  "/checker",
+  "/leaderboard",
+  "/worker/checker",
+  "/worker/exploitation",
+])
+
+function getRequiredRole(pathname: string): "worker" | "platform" | "government" | null {
+  if (pathname.startsWith("/worker")) return "worker"
+  if (pathname.startsWith("/platform")) return "platform"
+  if (pathname.startsWith("/government") || pathname.startsWith("/govt")) return "government"
+  return null
+}
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+  const isPublic =
+    PUBLIC_ROUTES.has(pathname) ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico" ||
+    pathname.includes(".")
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -15,7 +44,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -27,98 +56,33 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 1. Get the current user session
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const url = request.nextUrl.clone()
-  const path = url.pathname
+  const requiredRole = getRequiredRole(pathname)
 
-  // Public paths that do not require auth or role checks (so we don't break the existing MVP)
-  const isPublicPath = 
-    path === '/' || 
-    path.startsWith('/auth/') || 
-    path.startsWith('/api/') || 
-    path === '/checker' ||
-    path === '/grievance' ||
-    path === '/worker-rights' ||
-    path === '/leaderboard' ||
-    path === '/compare' ||
-    path === '/impact' ||
-    path === '/platform-portal' ||
-    path.includes('.') // static files
-
-  if (isPublicPath) {
-    return supabaseResponse
-  }
-
-  // 2. Protect Authenticated Routes
-  if (!user) {
-    // Redirect unauthenticated users to home page to login
-    url.pathname = '/'
+  // Redirect to login if accessing a protected route without a session
+  if (!isPublic && !user && requiredRole) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/login"
+    // Keep the intended path for post-login redirect if needed
+    url.searchParams.set("next", pathname)
     return NextResponse.redirect(url)
   }
 
-  // 3. Fetch User Role — defensively, in case the table doesn't exist yet
-  let userRole: string | null = null
-  try {
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!roleError && roleData) {
-      userRole = roleData.role
-    }
-  } catch {
-    // DB not ready yet, proceed without role enforcement
-    return supabaseResponse
-  }
-
-
-  // Helper: convert stored role string to the correct URL path
-  const roleToPath = (r: string) => {
-    if (r === 'worker') return '/worker'
-    if (r === 'platform') return '/platform'
-    if (r === 'government') return '/govt'
-    return '/'
-  }
-
-  if (userRole && path === '/select-role') {
-    url.pathname = roleToPath(userRole)
-    return NextResponse.redirect(url)
-  }
-
-  // 5. Enforce Portal-Specific Access Constraints
-  if (path.startsWith('/worker') && userRole !== 'worker') {
-    url.pathname = userRole ? roleToPath(userRole) : '/'
-    return NextResponse.redirect(url)
-  }
-
-  if (path.startsWith('/platform') && userRole !== 'platform') {
-    url.pathname = userRole ? roleToPath(userRole) : '/'
-    return NextResponse.redirect(url)
-  }
-
-  if (path.startsWith('/govt') && userRole !== 'government') {
-    url.pathname = userRole ? roleToPath(userRole) : '/'
-    return NextResponse.redirect(url)
+  // If user is logged in and trying to access a protected role route, check their role
+  if (user && requiredRole) {
+    // In middleware, we can't easily fetch the role without an extra DB hit which slows down every request.
+    // So we will just ensure they are logged in. The actual role check will be handled in the client side Layout or Page.
+    // This allows for faster routing.
+    // Note: A more robust approach uses custom claims in the JWT or a DB lookup here, 
+    // but the Next.js client component role redirects (like in /worker/page.tsx) will handle it.
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 }

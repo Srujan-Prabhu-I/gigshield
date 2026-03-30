@@ -20,6 +20,14 @@ type ComparisonResult = {
   color: string
 }
 
+type EarningsLogRow = {
+  platform: string | null
+  city: string | null
+  monthly_earnings: number | null
+  orders_per_day: number | null
+  hours_per_day: number | null
+}
+
 export default function ComparePage() {
   const [platforms, setPlatforms] = useState<PlatformData[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,14 +50,14 @@ export default function ComparePage() {
         return
       }
 
-      const logs = data || []
+      const logs: EarningsLogRow[] = (data || []) as EarningsLogRow[]
       
       // Extract unique cities
-      const uniqueCities = Array.from(new Set(logs.map((log: any) => log.city).filter(Boolean)))
+      const uniqueCities = Array.from(new Set(logs.map((log) => log.city).filter(Boolean) as string[]))
       setCities(uniqueCities)
 
       // Group by platform and calculate averages
-      const platformStats = logs.reduce((acc: any, log: any) => {
+      const platformStats = logs.reduce<Record<string, { totalEarnings: number; totalHours: number; count: number }>>((acc, log) => {
         const platform = log.platform || "Unknown"
         if (!acc[platform]) {
           acc[platform] = { totalEarnings: 0, totalHours: 0, count: 0 }
@@ -60,7 +68,7 @@ export default function ComparePage() {
         return acc
       }, {})
 
-      const platformData: PlatformData[] = Object.entries(platformStats).map(([platform, stats]: [string, any]) => {
+      const platformData: PlatformData[] = Object.entries(platformStats).map(([platform, stats]) => {
         const avgMonthlyEarnings = stats.count > 0 ? stats.totalEarnings / stats.count : 0
         const avgHoursPerDay = stats.count > 0 ? stats.totalHours / stats.count : 8
         const avgHourlyEarnings = avgHoursPerDay > 0 ? (avgMonthlyEarnings / 26) / avgHoursPerDay : 0
@@ -195,7 +203,7 @@ export default function ComparePage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {comparisons.map((result, index) => (
+                {comparisons.map((result) => (
                   <Card 
                     key={result.platform}
                     className={`border-2 transition-all duration-300 ${

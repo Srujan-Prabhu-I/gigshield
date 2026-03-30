@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, Gavel, UserCheck, ShieldAlert, BookOpen, Users } from "lucide-react"
 
@@ -47,7 +47,14 @@ export default function WorkerRightsPage() {
   const [language, setLanguage] = useState<"en" | "hi" | "te">("en")
   const [details, setDetails] = useState<string>("")
   const [loading, setLoading] = useState(false)
-  const [latestEntry, setLatestEntry] = useState<any | null>(null)
+  type EarningsLogEntry = {
+    platform: string | null
+    city: string | null
+    monthly_earnings: number | null
+    hours_per_day: number | null
+    calculated_deficit: number | null
+  }
+  const [latestEntry, setLatestEntry] = useState<EarningsLogEntry | null>(null)
   const [cityBelowMinPct, setCityBelowMinPct] = useState<number | null>(null)
   const [rightsInsightMessage, setRightsInsightMessage] = useState<string>("")
 
@@ -82,8 +89,6 @@ export default function WorkerRightsPage() {
       const actualPerHour = monthlyEarnings / (hoursPerDay * daysPerMonth) || 0
       const expectedMinMonthly = 93 * hoursPerDay * daysPerMonth
       const monthlyDeficit = Math.max(0, expectedMinMonthly - monthlyEarnings)
-      const deficitPerHour = monthlyDeficit / (hoursPerDay * daysPerMonth)
-
       setRightsInsightMessage(
         monthlyDeficit > 0 
           ? `⚠️ You are earning ₹${actualPerHour.toFixed(0)}/hr — Minimum required: ₹93/hr — Monthly Deficit: ₹${monthlyDeficit.toFixed(0)}`
@@ -99,7 +104,7 @@ export default function WorkerRightsPage() {
         return
       }
 
-      const cityStats = cityData as any[]
+      const cityStats = cityData as Array<{ monthly_earnings: number | null }>
       const belowCount = cityStats.filter((item) => (Number(item.monthly_earnings) || 0) < 93 * 8 * 26 / 12).length
       const percent = cityStats.length ? (belowCount / cityStats.length) * 100 : 0
       setCityBelowMinPct(percent)
@@ -149,9 +154,9 @@ export default function WorkerRightsPage() {
           </div>
         </div>
 
-        <Card className={`border ${latestEntry?.calculated_deficit > 0 ? 'border-red-900/50 bg-red-950/20' : 'border-[#3fe56c]/30 bg-[#3fe56c]/5'} p-6 rounded-2xl shadow-xl shadow-black/40`}>
+        <Card className={`border ${(latestEntry?.calculated_deficit ?? 0) > 0 ? 'border-red-900/50 bg-red-950/20' : 'border-[#3fe56c]/30 bg-[#3fe56c]/5'} p-6 rounded-2xl shadow-xl shadow-black/40`}>
           <div className="flex items-center gap-3 mb-4">
-            {latestEntry?.calculated_deficit > 0 ? (
+            {(latestEntry?.calculated_deficit ?? 0) > 0 ? (
               <ShieldAlert className="w-6 h-6 text-red-500" />
             ) : (
               <ShieldCheck className="w-6 h-6 text-[#3fe56c]" />
@@ -174,7 +179,7 @@ export default function WorkerRightsPage() {
           )}
           
           <div className="mt-6">
-            <Link href="/grievance">
+            <Link href="/worker/grievance">
               <Button className="w-full h-12 rounded-xl text-sm font-black tracking-wide bg-[#3fe56c] hover:bg-[#37cf61] text-black shadow-[0_0_20px_rgba(63,229,108,0.2)] transition-all active:scale-[0.98]">
                 Report Violation & Protect My Rights
               </Button>
@@ -213,7 +218,7 @@ export default function WorkerRightsPage() {
           <Link href="/checker" className="block">
             <Button className="w-full py-3 bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">Check My Pay</Button>
           </Link>
-          <Link href="/grievance" className="block">
+          <Link href="/worker/grievance" className="block">
             <Button className="w-full py-3 bg-linear-to-br from-[#3fe56c] to-[#00c853] text-black">File Complaint</Button>
           </Link>
           <Link href="/leaderboard" className="block">
